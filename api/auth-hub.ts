@@ -142,12 +142,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const hashedPassword = await bcrypt.hash(password, 10);
 
         // 3. Update DB
-        await query('UPDATE users SET password = $1 WHERE id = $2', [hashedPassword, decoded.id]);
+        const resDb = await query('UPDATE users SET password_hash = $1 WHERE id = $2', [hashedPassword, decoded.id]);
+        if (resDb.rowCount === 0) throw new Error('User not found in database');
 
         return res.status(200).json({ success: true, message: 'Password updated successfully' });
       } catch (err: any) {
-        console.error('Update password error:', err);
-        return res.status(400).json({ error: 'Invalid or expired reset token' });
+        console.error('Update password error:', err.message);
+        return res.status(400).json({ error: 'Failed to update password: ' + (err.message || 'Invalid or expired reset token') });
       }
     }
 
