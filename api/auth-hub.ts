@@ -133,8 +133,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         await sendResetEmail(email, resetLink);
         return res.status(200).json({ success: true, message: 'Password reset link sent to your inbox' });
       } catch (err: any) {
-        console.error('SES Failure:', err);
-        return res.status(500).json({ error: 'Failed to send email. Please ensure your AWS SES verified identity is set up.' });
+        console.error('SES Failure Details:', {
+          message: err.message,
+          code: err.code,
+          requestId: err.$metadata?.requestId,
+          email
+        });
+        return res.status(500).json({ 
+          error: `Failed to send email: ${err.message}. Ensure SITE_ORIGIN and SES_FROM_EMAIL are set correctly in Vercel.` 
+        });
       }
     }
 

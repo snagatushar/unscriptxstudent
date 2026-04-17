@@ -175,10 +175,10 @@ export default function Login() {
                     const response = await fetch('/api/auth-hub?action=reset-password', {
                       method: 'POST',
                       headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({ email: email.trim() })
                     });
-                    if (!response.ok) throw new Error('Reset request failed');
-                    toast.success('Password reset link sent to your email (simulated)!');
+                    const data = await response.json().catch(() => ({}));
+                    if (!response.ok) throw new Error(data.error || 'Reset request failed');
+                    toast.success('Password reset link sent to your inbox!');
                   } catch (err: any) {
                     toast.error(err.message || 'Could not send reset email.');
                   }
