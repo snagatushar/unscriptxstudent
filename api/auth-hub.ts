@@ -43,7 +43,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
       const hashedPassword = await bcrypt.hash(password, 10);
       const insertRes = await query(
-        `INSERT INTO users (id, full_name, email, role, password_hash) VALUES (gen_random_uuid(), $1, $2, 'user', $3) RETURNING id, role`,
+        `INSERT INTO users (id, full_name, email, role, password_hash) VALUES (gen_random_uuid(), $1, $2, 'user', $3) RETURNING id, full_name, email, role, phone, college_name`,
         [name || email, email, hashedPassword]
       );
       const user = insertRes.rows[0];
@@ -70,8 +70,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         return res.status(400).json({ error: 'Incorrect password. Please try again.' });
       }
 
+      // Fetch full profile for immediate frontend sync
+      const profile = await query('SELECT id, email, role, full_name, phone, college_name FROM users WHERE id = $1', [user.id]);
+      const fullUser = profile.rows[0];
+
       const token = jwt.sign({ id: user.id, email: user.email, role: user.role }, JWT_SECRET, { expiresIn: '7d' });
-      return res.status(200).json({ success: true, token, user: { id: user.id, email: user.email, role: user.role } });
+      return res.status(200).json({ success: true, token, user: fullUser });
     }
 
     if (action === 'me') {

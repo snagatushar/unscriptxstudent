@@ -8,8 +8,35 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (handlePreflight(req, res)) return;
 
   const { action } = req.query;
-
+  
   try {
+    // --- Action: Event Data (GET) ---
+    // Make this action accessible even if guest, to show price/rules
+    if (action === 'event-data' && req.method === 'GET') {
+      const { eventId } = req.query;
+      if (!eventId) return res.status(400).json({ error: 'Missing eventId' });
+
+      const eventRes = await query('SELECT * FROM events WHERE id = $1', [eventId]);
+      if (eventRes.rows.length === 0) return res.status(404).json({ error: 'Event not found' });
+      
+      const event = eventRes.rows[0];
+      let registeredCategories: string[] = [];
+      
+      // Try to get user registrations if token is present
+      try {
+        const decoded = await verifyUserToken(req);
+        if (decoded) {
+          const regRes = await query('SELECT sub_category FROM registrations WHERE event_id = $1 AND user_id = $2', [eventId, decoded.id]);
+          registeredCategories = regRes.rows.map(r => r.sub_category).filter(Boolean);
+        }
+      } catch (e) {
+        // Not logged in or invalid token - just return event details
+      }
+
+      return res.status(200).json({ event, registeredCategories });
+    }
+
+    // MANDATORY AUTHENTICATION BEYOND THIS POINT
     const decoded = await verifyUserToken(req);
     const userId = decoded.id;
 
@@ -23,7 +50,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // --- Action: Registrations (GET) ---
     if (action === 'registrations' && req.method === 'GET') {
       const result = await query(`
-        SELECT r.*, e.title as event_title, e.category as event_category, e.image_url as event_image_url
+        SELECT r.*, 
+          COALESCE(r.payment_status, 'pending') as payment_status,
+          e.title as event_title, 
+          e.category as event_category, 
+          e.image_url as event_image_url
         FROM registrations r
         JOIN events e ON r.event_id = e.id
         WHERE r.user_id = $1
@@ -54,7 +85,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         `INSERT INTO registrations (
           user_id, event_id, participant_name, email, phone, college_name,
           department, year_of_study, team_name, team_size, sub_category,
-          team_members, payment_screenshot_url, id_card_url, status
+          team_members, payment_screenshot_url, id_card_url, payment_status
         ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, 'pending') RETURNING *`,
         [
           user_id, event_id, participant_name, email, phone, college_name,
@@ -63,9 +94,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         ]
       );
 
-      // Sync user profile data
+      // Sync user profile data if not exists (safer COALESCE logic)
       await query(
-        `UPDATE users SET phone = $1, college_name = $2, full_name = $3 WHERE id = $4`,
+        `UPDATE users 
+         SET phone = CASE WHEN phone IS NULL OR phone = '' THEN $1 ELSE phone END, 
+             college_name = CASE WHEN college_name IS NULL OR college_name = '' THEN $2 ELSE college_name END, 
+             full_name = CASE WHEN full_name IS NULL OR full_name = '' THEN $3 ELSE full_name END 
+         WHERE id = $4`,
         [phone, college_name, participant_name, user_id]
       );
 
@@ -83,12 +118,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         [registrationId, round, videoUrl, videoUrl, notes || null, 'submitted']
       );
       return res.status(200).json(result.rows[0]);
-    }
-
-    // --- Action: Event Data (GET) ---
-    if (action === 'event-data' && req.method === 'GET') {
-      const result = await query('SELECT e.title, COUNT(r.id) as registration_count FROM events e LEFT JOIN registrations r ON e.id = r.event_id GROUP BY e.id');
-      return res.status(200).json(result.rows);
     }
 
     return res.status(400).json({ error: `Action ${action} not supported or method ${req.method} invalid` });

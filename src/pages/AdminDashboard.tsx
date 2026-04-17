@@ -798,12 +798,24 @@ export default function AdminDashboard() {
     event.preventDefault();
     try {
       const rulesArray = newEvent.rules.split('\n').map((rule) => rule.trim()).filter(Boolean);
+      const baseSlug = (newEvent.title || 'event').trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+      const slug = baseSlug || `event-${Date.now()}`;
+
       const payload = {
-        ...newEvent,
-        slug: newEvent.title.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''),
+        title: newEvent.title.trim(),
+        category: newEvent.category.trim(),
+        description: newEvent.description.trim(),
+        entry_fee: newEvent.entry_fee,
+        max_team_size: newEvent.max_team_size,
+        payment_account_name: newEvent.payment_account_name.trim(),
+        payment_account_number: newEvent.payment_account_number.trim(),
+        payment_ifsc: newEvent.payment_ifsc.trim(),
+        payment_upi_id: newEvent.payment_upi_id.trim(),
+        slug: slug,
         image_url: newEvent.image_url || null,
         rules: rulesArray,
         is_active: true,
+        sub_categories: newEvent.sub_categories,
       };
 
       const action = editingEventId ? 'update' : 'insert';
