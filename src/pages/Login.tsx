@@ -89,16 +89,15 @@ export default function Login() {
       if (!response.ok) throw new Error(data.error || 'Authentication failed');
 
       localStorage.setItem('unscriptx_token', data.token);
+      window.dispatchEvent(new Event('unscriptx_auth_change'));
       
       toast.success(isLogin ? 'Successfully logged in!' : 'Signup successful! Welcome to UNSCRIPTX.');
-      if (!isLogin) {
-        setIsLogin(true);
-      } else {
-        // Trigger a reload or context refetch since we rely on token now
-        window.location.reload();
-      }
+      
+      // Navigate immediately — AuthContext will pick up the token via the event
+      const target = nextPath && nextPath.startsWith('/') && !nextPath.startsWith('//') ? nextPath : '/';
+      navigate(target, { replace: true });
     } catch (err: any) {
-      toast.error(err.message || 'Authentication failed');
+      toast.error(getAuthErrorMessage(err));
     } finally {
       setLoading(false);
     }
@@ -175,6 +174,7 @@ export default function Login() {
                     const response = await fetch('/api/auth-hub?action=reset-password', {
                       method: 'POST',
                       headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ email: email.trim() })
                     });
                     const data = await response.json().catch(() => ({}));
                     if (!response.ok) throw new Error(data.error || 'Reset request failed');
