@@ -48,14 +48,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method === 'OPTIONS') return res.status(200).end();
 
   try {
-  // Auto-detect google-callback if 'code' is present but 'action' is missing (for clean Redirect URIs)
-  const action = req.query.action || (req.query.code ? 'google-callback' : null);
+    // Auto-detect google-callback if 'code' is present but 'action' is missing (for clean Redirect URIs)
+    const action = req.query.action || (req.query.code ? 'google-callback' : null);
 
     // 1. Signup, Login, Me... (Standard handlers)
     if (action === 'signup' && req.method === 'POST') {
       const body = await getJsonBody(req);
       const { email, password, name } = body;
-      
+
       const domain = email?.split('@')[1]?.toLowerCase();
       if (domain) {
         const blockedRes = await query('SELECT domain FROM blocked_domains WHERE domain = $1', [domain]);
@@ -64,7 +64,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
       const existing = await query('SELECT id FROM users WHERE LOWER(email) = LOWER($1)', [email]);
       if (existing.rows.length > 0) return res.status(400).json({ error: 'Email already exists' });
-      
+
       const hashedPassword = await bcrypt.hash(password, 10);
       const insertRes = await query(
         `INSERT INTO users (id, full_name, email, role, password_hash) VALUES (gen_random_uuid(), $1, $2, 'user', $3) RETURNING id, role`,
@@ -131,7 +131,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const { sendResetEmail } = await import('./_lib/ses-util.js');
       const origin = process.env.SITE_ORIGIN || 'https://unscriptxaws.vercel.app';
       const resetLink = `${origin}/reset-password?token=${resetToken}`;
-      
+
       try {
         await sendResetEmail(email, resetLink);
         return res.status(200).json({ success: true, message: 'Password reset link sent to your inbox' });
@@ -169,15 +169,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (action === 'google-login' || action === 'user-google-login') {
       const statePrefix = action === 'google-login' ? 'admin' : 'user';
       const state = `${statePrefix}:${randomBytes(16).toString('hex')}`;
-      
+
       const existingToken = req.query.token || '';
       const finalState = existingToken ? `${state}:${existingToken}` : state;
 
       res.setHeader('Set-Cookie', `google_oauth_state=${state}; HttpOnly; Path=/; SameSite=Lax; Max-Age=300`);
-      
+
       // Determine scopes: Admins connecting drive need both identity + drive. Students only need identity.
       const scopes = (statePrefix === 'admin') ? [...USER_IDENTITY_SCOPE, ...DRIVE_SCOPE] : USER_IDENTITY_SCOPE;
-      
+
       return res.redirect(buildGoogleAuthUrl(finalState, { scopes }));
     }
 
@@ -222,7 +222,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       // Flow B: Admin Connect Drive
       if (String(state).startsWith('admin:')) {
         const parts = String(state).split(':');
-        const adminToken = parts[2]; 
+        const adminToken = parts[2];
 
         if (!adminToken) return res.status(401).send('Admin session missing');
         const decodedAdmin = jwt.verify(adminToken, JWT_SECRET) as any;
@@ -242,7 +242,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           'google_drive_owner', tokens.access_token, tokens.refresh_token,
           tokens.scope, tokens.token_type, tokens.expiry_date, new Date().toISOString()
         ]);
-        
+
         return res.redirect('/admin?success=google_connected');
       }
     }
