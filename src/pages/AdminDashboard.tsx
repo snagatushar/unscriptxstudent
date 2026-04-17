@@ -803,6 +803,7 @@ export default function AdminDashboard() {
         slug: newEvent.title.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''),
         image_url: newEvent.image_url || null,
         rules: rulesArray,
+        is_active: true,
       };
 
       const action = editingEventId ? 'update' : 'insert';
@@ -841,6 +842,7 @@ export default function AdminDashboard() {
         }
       }
 
+      setIsCreatedEventsExpanded(true);
       resetEventForm();
       await fetchData();
     } catch (err: any) {

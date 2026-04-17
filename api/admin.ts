@@ -56,7 +56,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         if (decoded.role !== 'admin' && !isDetailed) {
           const assignments = await query(
             'SELECT event_id FROM reviewer_event_assignments WHERE reviewer_id = $1 AND role_type = $2',
-            [decoded.id, isPayment ? 'payment' : 'content_reviewer']
+            [decoded.id, isPayment ? 'payment' : 'judge']
           );
           assignedEventIds = assignments.rows.map(a => a.event_id);
           if (assignedEventIds.length === 0) return res.status(200).json([]);
