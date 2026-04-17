@@ -2,7 +2,7 @@
 
 **UNSCRIPTX 2026** is a high-energy, production-ready platform designed for the modern college cultural fest experience. Built with a focus on raw performance, sophisticated animations, and rock-solid security, it handles everything from student registrations and event management to multi-round video submissions and administrative judging workflows.
 
-![UNSCRIPTX Banner](https://unscriptx-t.vercel.app/logo.png)
+![UNSCRIPTX Banner](https://www.unscriptx.com/logo.png)
 
 ## ✨ Core Features
 
@@ -82,8 +82,8 @@ The site will be available at `http://localhost:5173`.
 1. Connect your GitHub repository to [Vercel](https://vercel.com/).
 2. Add your environment variables in the Vercel Dashboard.
 3. **Crucial**: Update your **Supabase Authentication Settings**:
-   - **Site URL**: `https://unscriptx-t.vercel.app`
-   - **Redirect URLs**: `https://unscriptx-t.vercel.app/**`
+   - **Site URL**: `https://www.unscriptx.com`
+   - **Redirect URLs**: `https://www.unscriptx.com/**`
 
 ---
 

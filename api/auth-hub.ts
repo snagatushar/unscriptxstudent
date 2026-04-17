@@ -129,7 +129,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
       // 3. Dispatch real email via AWS SES
       const { sendResetEmail } = await import('./_lib/ses-util.js');
-      const origin = process.env.SITE_ORIGIN || 'https://unscriptxaws.vercel.app';
+      const origin = process.env.SITE_ORIGIN || 'https://www.unscriptx.com';
       const resetLink = `${origin}/reset-password?token=${resetToken}`;
 
       try {

@@ -11,7 +11,7 @@ export const config = {
   },
 };
 
-const ALLOWED_ORIGIN = process.env.SITE_ORIGIN || 'https://unscriptxaws.vercel.app';
+const ALLOWED_ORIGIN = process.env.SITE_ORIGIN || 'https://www.unscriptx.com';
 
 function setCors(res: VercelResponse, methods = 'GET,POST,PUT,OPTIONS') {
   res.setHeader('Access-Control-Allow-Origin', ALLOWED_ORIGIN);
