@@ -1,11 +1,13 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
 import { query } from './_lib/db.js';
 import { verifyUserToken } from './_lib/auth-util.js';
+import { setCors, handlePreflight } from './_lib/cors.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  const { action } = req.query;
+  setCors(res);
+  if (handlePreflight(req, res)) return;
 
-  if (req.method === 'OPTIONS') return res.status(200).end();
+  const { action } = req.query;
 
   try {
     const decoded = await verifyUserToken(req);

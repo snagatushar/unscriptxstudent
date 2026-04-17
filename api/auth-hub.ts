@@ -1,5 +1,6 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
 import { query } from './_lib/db.js';
+import { setCors, handlePreflight } from './_lib/cors.js';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { randomBytes } from 'crypto';
@@ -12,11 +13,7 @@ if (!JWT_SECRET) {
   throw new Error('JWT_SECRET environment variable is not set');
 }
 
-function setCors(res: any) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-}
+
 
 export const config = {
   api: {
@@ -45,7 +42,7 @@ async function getJsonBody(req: VercelRequest): Promise<any> {
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   setCors(res);
-  if (req.method === 'OPTIONS') return res.status(200).end();
+  if (handlePreflight(req, res)) return;
 
   try {
     // Auto-detect google-callback if 'code' is present but 'action' is missing (for clean Redirect URIs)

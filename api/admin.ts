@@ -1,5 +1,6 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
 import { query } from './_lib/db.js';
+import { setCors, handlePreflight } from './_lib/cors.js';
 
 import jwt from 'jsonwebtoken';
 
@@ -9,7 +10,10 @@ if (!JWT_SECRET) {
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  const { action, table, record, id } = req.body;
+  setCors(res);
+  if (handlePreflight(req, res)) return;
+
+  const { action, table, record, id } = req.body || {};
   
   // JWT Role Verification
   const token = req.headers.authorization?.split(' ')[1];

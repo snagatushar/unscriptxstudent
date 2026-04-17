@@ -1,7 +1,11 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
 import { query } from './_lib/db.js';
+import { setCors, handlePreflight } from './_lib/cors.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  setCors(res, 'POST,OPTIONS');
+  if (handlePreflight(req, res)) return;
+
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   const { name, email, message } = req.body;

@@ -3,6 +3,7 @@ import { PutObjectCommand, GetObjectCommand, DeleteObjectCommand } from '@aws-sd
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { s3Client } from './_lib/s3-client.js';
 import { verifyUserToken } from './_lib/auth-util.js';
+import { setCors, handlePreflight } from './_lib/cors.js';
 
 const MIME_ALLOW_LIST = [
   'image/jpeg',
@@ -14,11 +15,10 @@ const MIME_ALLOW_LIST = [
 ];
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  const { action } = req.query;
+  setCors(res);
+  if (handlePreflight(req, res)) return;
 
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
-  }
+  const { action } = req.query;
 
   try {
     const bucketName = process.env.AWS_S3_BUCKET_NAME;

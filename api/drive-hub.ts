@@ -4,6 +4,7 @@ import { VercelRequest, VercelResponse } from '@vercel/node';
 import formidable from 'formidable';
 import { getDriveClientWithOAuth, getGoogleAccessToken } from './_lib/google-oauth.js';
 import { verifyUserToken, verifyAdmin } from './_lib/auth-util.js';
+import { setCors, handlePreflight } from './_lib/cors.js';
 
 export const config = {
   api: {
@@ -11,14 +12,7 @@ export const config = {
   },
 };
 
-const ALLOWED_ORIGIN = process.env.SITE_ORIGIN || 'https://www.unscriptx.com';
 
-function setCors(res: VercelResponse, methods = 'GET,POST,PUT,OPTIONS') {
-  res.setHeader('Access-Control-Allow-Origin', ALLOWED_ORIGIN);
-  res.setHeader('Access-Control-Allow-Methods', methods);
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Upload-Url, X-Content-Range, X-Content-Type');
-  res.setHeader('Vary', 'Origin');
-}
 
 async function getRawBody(req: VercelRequest): Promise<Buffer> {
   return new Promise((resolve, reject) => {
@@ -106,8 +100,8 @@ async function getOrCreateSubCategoryFolderId(drive: any, parentFolderId: string
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  setCors(res);
-  if (req.method === 'OPTIONS') return res.status(200).end();
+  setCors(res, 'GET,POST,PUT,OPTIONS');
+  if (handlePreflight(req, res)) return;
 
   const { action } = req.query;
 
@@ -152,7 +146,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const body = await getJsonBody(req);
       const { eventTitle, userName, round, subCategory, fileName, fileSize, mimeType } = body;
 
-      const origin = req.headers?.origin || ALLOWED_ORIGIN;
+      const origin = req.headers?.origin || process.env.SITE_ORIGIN || 'https://www.unscriptx.com';
       const accessToken = await getGoogleAccessToken();
 
       // Resolve Folder Chain
