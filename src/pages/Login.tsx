@@ -50,9 +50,14 @@ export default function Login() {
 
     if (gToken) {
       localStorage.setItem('unscriptx_token', gToken);
+      // Dispatch custom event so AuthContext knows to re-fetch
+      window.dispatchEvent(new Event('unscriptx_auth_change'));
       toast.success('Successfully logged in with Google!');
+      
+      // Clean up URL and navigate
       window.history.replaceState({}, document.title, '/login');
-      window.location.reload();
+      const target = nextPath && nextPath.startsWith('/') && !nextPath.startsWith('//') ? nextPath : '/';
+      navigate(target, { replace: true });
       return;
     }
 
