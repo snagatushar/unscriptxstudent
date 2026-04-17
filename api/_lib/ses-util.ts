@@ -1,7 +1,8 @@
 import { SESClient, SendEmailCommand } from "@aws-sdk/client-ses";
 
-const SES_SENDER = process.env.SES_FROM_EMAIL || 'noreply@unscriptx.com'; // User must verify this in AWS
-const AWS_REGION = process.env.AWS_REGION || 'ap-south-1';
+const rawSender = process.env.SES_FROM_EMAIL || 'noreply@unscriptx.com';
+const SES_SENDER = rawSender.replace(/^["']|["']$/g, '').trim(); 
+const AWS_REGION = (process.env.AWS_REGION || 'ap-south-1').replace(/^["']|["']$/g, '').trim();
 
 const sesClient = new SESClient({
   region: AWS_REGION,
