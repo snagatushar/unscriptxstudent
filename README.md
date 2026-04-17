@@ -14,10 +14,10 @@
 ### 🛡️ Secure & Scalable Architecture
 - **Role-Based Access Control (RBAC)**: Dedicated dashboards for **Admins**, **Payment Reviewers**, **Content Judges**, and **Participants**.
 - **Hardened Security**: Pre-configured security headers (CSP, HSTS, XSS protection) via `vercel.json`.
-- **Row-Level Security (RLS)**: Fine-grained database permissions managed directly on Supabase.
+- **Relational Data**: High-performance Postgres database hosted on Vercel/External.
 
 ### ⚡ Performance-First
-- **Smart Code Splitting**: Manual chunking of vendor libraries (React, Motion, Supabase, ExcelJS) for better caching.
+- **Smart Code Splitting**: Manual chunking of vendor libraries (React, Motion, ExcelJS) for better caching.
 - **Lazy Loading**: Route-level lazy loading significantly reduces the main JS bundle size.
 - **Global Data Caching**: In-memory caching for static fest data (rules, committee, events) eliminates redundant network traffic.
 - **Optimized Assets**: Image pre-loading and data-URI noise textures for instant render times.
@@ -33,7 +33,7 @@
 
 - **Frontend**: [React 19](https://react.dev/) + [Vite 6](https://vitejs.dev/)
 - **Logic**: [TypeScript](https://www.typescriptlang.org/)
-- **Backend/Auth/DB**: [Supabase](https://supabase.com/)
+- **Backend/Auth/DB**: Postgres + Vercel Serverless Functions
 - **Styling**: Vanilla CSS (Modern Design System)
 - **Animations**: [Motion](https://motion.dev/)
 - **Reports**: [ExcelJS](https://github.com/exceljs/exceljs)
@@ -59,14 +59,15 @@ npm install
 ### 4. Set up Environment Variables
 Create a `.env` file in the root directory:
 ```env
-VITE_SUPABASE_URL=your_supabase_url
-VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+DATABASE_URL=your_postgres_db_url
 GOOGLE_CLIENT_ID=your_google_oauth_client_id
 GOOGLE_CLIENT_SECRET=your_google_oauth_client_secret
 GOOGLE_REDIRECT_URI=http://localhost:3000/api/auth/google/callback
-SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
 GDRIVE_EVENT_FOLDER_MAP_JSON={"Event 1":"folderId1"}
 GDRIVE_ROOT_FOLDER_ID=your_events_root_folder_id
+AWS_ACCESS_KEY_ID=...
+AWS_SECRET_ACCESS_KEY=...
+AWS_REGION=ap-south-1
 ```
 
 ### 5. Start the development server
@@ -146,8 +147,7 @@ Then copy that JSON into:
 - `GOOGLE_CLIENT_ID`
 - `GOOGLE_CLIENT_SECRET`
 - `GOOGLE_REDIRECT_URI`
-- `SUPABASE_SERVICE_ROLE_KEY`
-- `SUPABASE_URL`
+- `DATABASE_URL`
 - `GDRIVE_ROOT_FOLDER_ID` (recommended)
 - `GDRIVE_EVENT_FOLDER_MAP_JSON` (optional override map)
 
@@ -157,7 +157,7 @@ Open this once after deploy/local backend start:
 
 - `/api/auth/google`
 
-After consent, tokens are stored in Supabase table `google_oauth_tokens`.
+After consent, tokens are stored in the database table `google_oauth_tokens`.
 
 Create the table (once):
 

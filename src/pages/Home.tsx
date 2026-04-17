@@ -31,7 +31,7 @@ const ABOUT_COLLEGE = {
 };
 
 /**
- * Hardcoded universal guidelines — no Supabase egress.
+ * Hardcoded universal guidelines — isolated from API.
  */
 const GENERAL_RULES = [
   'All participants must carry a valid college ID card at all times during the event.',
@@ -278,8 +278,9 @@ export default function Home() {
                 </motion.div>
               ))
             ) : (
-              <div className="col-span-full text-center py-10 glass rounded-3xl">
-                <p className="text-white/40 font-bold uppercase tracking-widest text-sm">Committee list coming soon.</p>
+              // No registrations via API yet
+              <div className="col-span-full py-16 text-center glass rounded-3xl border border-dashed border-white/5">
+                <p className="text-white/20 font-bold uppercase tracking-widest text-xs">No entries found</p>
               </div>
             )}
           </div>

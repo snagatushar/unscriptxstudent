@@ -30,7 +30,6 @@ export default defineConfig(({mode}) => {
           manualChunks: {
             'vendor-react': ['react', 'react-dom', 'react-router-dom'],
             'vendor-motion': ['motion/react'],
-            'vendor-supabase': ['@supabase/supabase-js'],
             'vendor-excel': ['exceljs', 'file-saver'],
           },
         },
