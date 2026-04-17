@@ -85,14 +85,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     if (action === 'reset-password' && req.method === 'POST') {
-      const body = req.body || {};
-      const { email } = body;
-      if (!email) return res.status(400).json({ error: 'Email is required' });
+      let body = req.body || {};
+      if (typeof body === 'string') {
+        try { body = JSON.parse(body); } catch (e) { /* ignore */ }
+      }
+      
+      const email = (body.email || '').trim().toLowerCase();
+      if (!email) return res.status(400).json({ error: 'Email (recipient) is required for reset' });
 
       // 1. Verify user exists
       const result = await query('SELECT id FROM users WHERE LOWER(email) = LOWER($1)', [email]);
       if (result.rows.length === 0) {
-        return res.status(400).json({ error: 'Account not found with this email' });
+        return res.status(400).json({ error: `Account not found: ${email}. Please check spelling or sign up.` });
       }
       const user = result.rows[0];
 
