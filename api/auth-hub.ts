@@ -15,30 +15,9 @@ if (!JWT_SECRET) {
 
 
 
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
 
-async function getRawBody(req: VercelRequest): Promise<Buffer> {
-  return new Promise((resolve, reject) => {
-    const chunks: Buffer[] = [];
-    req.on('data', (chunk: Buffer) => chunks.push(chunk));
-    req.on('end', () => resolve(Buffer.concat(chunks)));
-    req.on('error', reject);
-  });
-}
 
-async function getJsonBody(req: VercelRequest): Promise<any> {
-  const body = await getRawBody(req);
-  if (!body.length) return {};
-  try {
-    return JSON.parse(body.toString('utf-8'));
-  } catch {
-    return {};
-  }
-}
+
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   setCors(res);
@@ -50,7 +29,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // 1. Signup, Login, Me... (Standard handlers)
     if (action === 'signup' && req.method === 'POST') {
-      const body = await getJsonBody(req);
+      const body = req.body || {};
       const { email, password, name } = body;
 
       const domain = email?.split('@')[1]?.toLowerCase();
@@ -73,7 +52,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     if (action === 'login' && req.method === 'POST') {
-      const body = await getJsonBody(req);
+      const body = req.body || {};
       const { email, password } = body;
 
       if (!email || !password) {
@@ -96,7 +75,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     if (action === 'me') {
-      const body = await getJsonBody(req);
+      const body = req.body || {};
       const token = body?.token || req.headers.authorization?.replace('Bearer ', '');
       if (!token) return res.status(401).json({ error: 'No token provided' });
       const decoded = jwt.verify(token, JWT_SECRET) as any;
@@ -106,7 +85,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     if (action === 'reset-password' && req.method === 'POST') {
-      const body = await getJsonBody(req);
+      const body = req.body || {};
       const { email } = body;
       if (!email) return res.status(400).json({ error: 'Email is required' });
 
@@ -146,7 +125,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     if (action === 'update-password' && req.method === 'POST') {
-      const body = await getJsonBody(req);
+      const body = req.body || {};
       const { password, token } = body;
 
       if (!password || !token) return res.status(400).json({ error: 'Missing password or verification token' });
