@@ -22,8 +22,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   let decoded: any;
   try {
     decoded = jwt.verify(token, JWT_SECRET);
-    if (decoded.role !== 'admin' && decoded.role !== 'payment_reviewer' && decoded.role !== 'judge') {
-      return res.status(403).json({ error: 'Permission denied. Admin, judge, or reviewer role required.' });
+    if (decoded.role !== 'admin' && decoded.role !== 'payment_reviewer' && decoded.role !== 'content_reviewer') {
+      return res.status(403).json({ error: 'Permission denied. Admin, content_reviewer, or reviewer role required.' });
     }
   } catch (err) {
     return res.status(401).json({ error: 'Invalid token' });
@@ -56,7 +56,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         if (decoded.role !== 'admin' && !isDetailed) {
           const assignments = await query(
             'SELECT event_id FROM reviewer_event_assignments WHERE reviewer_id = $1 AND role_type = $2',
-            [decoded.id, isPayment ? 'payment' : 'judge']
+            [decoded.id, isPayment ? 'payment' : 'content_reviewer']
           );
           assignedEventIds = assignments.rows.map(a => a.event_id);
           if (assignedEventIds.length === 0) return res.status(200).json([]);
@@ -107,7 +107,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       // Generic list handler with safety check
       if (typeof resource === 'string' && ALLOWED_TABLES.includes(resource)) {
           const safeTable = resource;
-          const data = await query(`SELECT * FROM ${safeTable} ORDER BY ${safeTable === 'events' ? 'created_at' : 'id'} DESC`);
+          const queryStr = safeTable === 'users'
+            ? 'SELECT id, email, role, full_name, phone, college_name, created_at FROM users ORDER BY created_at DESC'
+            : `SELECT * FROM ${safeTable} ORDER BY ${safeTable === 'events' ? 'created_at' : 'id'} DESC`;
+          const data = await query(queryStr);
           return res.status(200).json(data.rows);
       }
     }
@@ -122,14 +125,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
          const isPayment = decoded.role === 'payment_reviewer';
          const assignments = await query(
             'SELECT event_id FROM reviewer_event_assignments WHERE reviewer_id = $1 AND role_type = $2',
-            [decoded.id, isPayment ? 'payment' : 'judge']
+            [decoded.id, isPayment ? 'payment' : 'content_reviewer']
          );
          assignedEventIds = assignments.rows.map(a => a.event_id);
 
-         // Judges can only touch internal_reviews or submissions (marks)
-         if (decoded.role === 'judge') {
+         // Content Reviewers can only touch internal_reviews or submissions (marks)
+         if (decoded.role === 'content_reviewer') {
             if (safeTable !== 'internal_reviews' && safeTable !== 'submissions') {
-               return res.status(403).json({ error: 'Judges can only manage reviews and submissions.' });
+               return res.status(403).json({ error: 'Content Reviewers can only manage reviews and submissions.' });
             }
          }
          // Payment reviewers can only touch registrations
