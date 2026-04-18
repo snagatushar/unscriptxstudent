@@ -145,6 +145,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
       if (action === 'delete') {
          if (decoded.role !== 'admin') return res.status(403).json({ error: 'Only admins can delete records.' });
+
+         // Cascade deletions manually to prevent PostgreSQL foreign key constraint violations
+         if (safeTable === 'registrations') {
+             await query(`DELETE FROM internal_reviews WHERE submission_id IN (SELECT id FROM submissions WHERE registration_id = $1)`, [id]);
+             await query(`DELETE FROM submissions WHERE registration_id = $1`, [id]);
+         } else if (safeTable === 'events') {
+             await query(`DELETE FROM internal_reviews WHERE submission_id IN (SELECT id FROM submissions WHERE registration_id IN (SELECT id FROM registrations WHERE event_id = $1))`, [id]);
+             await query(`DELETE FROM submissions WHERE registration_id IN (SELECT id FROM registrations WHERE event_id = $1)`, [id]);
+             await query(`DELETE FROM reviewer_event_assignments WHERE event_id = $1`, [id]);
+             await query(`DELETE FROM registrations WHERE event_id = $1`, [id]);
+         }
+
          await query(`DELETE FROM ${safeTable} WHERE id = $1`, [id]);
          return res.status(200).json({ success: true });
       }
