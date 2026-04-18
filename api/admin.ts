@@ -32,7 +32,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const ALLOWED_TABLES = [
     'events', 'registrations', 'users', 'internal_reviews', 'submissions', 
     'site_content', 'committee', 'faculty', 'general_rules', 
-    'hero_slideshow', 'blocked_domains', 'contact_messages', 'reviewer_event_assignments'
+    'hero_slideshow', 'blocked_domains', 'contact_messages', 'reviewer_event_assignments', 'audit_logs'
   ];
 
   const validateTable = (t: string) => {

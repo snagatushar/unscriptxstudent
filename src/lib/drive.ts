@@ -105,7 +105,7 @@ export async function uploadVideoToDrive(params: UploadToDriveParams) {
     if (result.status === 'complete') {
       if (onProgress) onProgress(100);
       return {
-        fileId: result.fileId,
+        fileId: result.id || result.fileId,
         fileName: result.fileName || fileName,
         mimeType: result.mimeType || file.type || 'application/octet-stream',
         size: result.size?.toString() || file.size.toString(),
