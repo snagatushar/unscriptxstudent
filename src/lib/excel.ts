@@ -1,15 +1,20 @@
-import ExcelJS from 'exceljs';
-import { saveAs } from 'file-saver';
-
 /**
  * Export an array of JSON objects to an Excel file.
- * Drop-in replacement for the old xlsx library (OWASP A06 fix).
+ * ExcelJS and file-saver are loaded ON-DEMAND (dynamic import) to avoid
+ * bundling 934 KB into the main chunk. They are only needed when
+ * an admin clicks "Export".
  */
 export async function exportToExcel(
   data: Record<string, any>[],
   sheetName: string,
   fileName: string
 ) {
+  // Dynamic imports — ExcelJS (934KB) only loads when this function is called
+  const [{ default: ExcelJS }, { saveAs }] = await Promise.all([
+    import('exceljs'),
+    import('file-saver'),
+  ]);
+
   const workbook = new ExcelJS.Workbook();
   const worksheet = workbook.addWorksheet(sheetName);
 

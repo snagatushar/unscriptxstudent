@@ -30,6 +30,15 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 
+  <!-- DNS prefetch for S3 bucket (event images load faster) -->
+  <link rel="dns-prefetch" href="https://unscriptx-assets-2026.s3.ap-south-1.amazonaws.com" />
+
+  <!-- Preload first hero slideshow image for faster LCP -->
+  <link rel="preload" as="image" href="/slides/codingslide.webp" type="image/webp" />
+
+  <!-- Preload logo for instant navbar rendering -->
+  <link rel="preload" as="image" href="/logo.png" />
+
   <!-- Google Fonts with display=swap for faster text rendering -->
   <link
     href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@300;400;500;600;700&display=swap"

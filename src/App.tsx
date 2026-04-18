@@ -10,7 +10,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 // Lazy load ALL non-critical pages for faster initial load
 const Events = lazy(() => import('./pages/Events'));
 const EventDetail = lazy(() => import('./pages/EventDetail'));
-import Register from './pages/Register';
+const Register = lazy(() => import('./pages/Register'));
 // const Register = lazy(() => import('./pages/Register'));
 const Rules = lazy(() => import('./pages/Rules'));
 const About = lazy(() => import('./pages/About'));

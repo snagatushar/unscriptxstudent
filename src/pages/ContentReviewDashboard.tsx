@@ -7,7 +7,7 @@ import { useAuth } from '../contexts/AuthContext';
 
 import { QualificationStage, Submission } from '../types';
 import { logAdminAction } from '../lib/audit';
-import { getDriveStreamUrl, getEventDriveFiles } from '../lib/drive';
+import { getEventDriveFiles } from '../lib/drive';
 
 type ContentReview = {
   id: string;
@@ -52,53 +52,24 @@ function isRoundPast(currentStage: QualificationStage, roundToCheck: string): bo
 }
 
 function VideoPreview({ submission, eventTitle }: { submission: Submission; eventTitle: string }) {
-  const [videoUrl, setVideoUrl] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    async function getUrl() {
-      try {
-        const url = await getDriveStreamUrl(submission.video_path);
-        setVideoUrl(url);
-      } catch (error) {
-        console.error('Error creating signed URL:', error);
-        setVideoUrl(null);
-      }
-      setLoading(false);
-    }
-    getUrl();
-  }, [submission.video_path, eventTitle]);
-
-  if (loading) return (
-    <div className="w-full aspect-video rounded-xl bg-white/5 flex items-center justify-center border border-white/10 animate-pulse">
-      <Loader2 className="animate-spin text-white/20" size={24} />
-    </div>
-  );
-
-  if (!videoUrl) return (
-    <div className="w-full aspect-video rounded-xl bg-red-500/5 flex items-center justify-center border border-red-500/10 text-red-400 text-xs text-center p-4">
-      Failed to load video from Google Drive.
-    </div>
-  );
-
   return (
-    <div className="space-y-3">
-      <video 
-        src={videoUrl} 
-        controls 
-        className="w-full aspect-video rounded-xl bg-black border border-white/10 shadow-2xl"
-      />
-      <div className="flex gap-2">
-        <a 
-          href={videoUrl} 
-          download 
-          target="_blank" 
-          rel="noopener noreferrer"
-          className="flex-1 py-2 bg-white/5 hover:bg-white/10 rounded-lg text-[10px] uppercase font-bold tracking-widest text-center transition-all border border-white/5"
-        >
-          Download Video
-        </a>
+    <div className="w-full rounded-xl bg-black/60 border border-white/10 p-4 flex items-center gap-4">
+      <div className="w-10 h-10 rounded-xl bg-fest-primary/10 border border-fest-primary/20 flex items-center justify-center shrink-0">
+        <Video size={18} className="text-fest-primary" />
       </div>
+      <div className="flex-1 min-w-0">
+        <div className="text-xs font-bold text-white/70">Video Submitted</div>
+        <div className="text-[10px] text-white/30 mt-0.5 truncate">ID: {submission.video_path || submission.video_url || 'N/A'}</div>
+        <div className="text-[10px] text-white/30">{new Date(submission.created_at).toLocaleString()}</div>
+      </div>
+      <a
+        href={`https://drive.google.com/file/d/${submission.video_path || submission.video_url}/view`}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="px-3 py-2 bg-fest-primary/10 text-fest-primary hover:bg-fest-primary hover:text-fest-dark rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all border border-fest-primary/20 shrink-0"
+      >
+        View on Drive
+      </a>
     </div>
   );
 }
@@ -439,12 +410,15 @@ export default function ContentReviewDashboard() {
                       <div className="absolute top-0 right-0 p-2 opacity-0 group-hover:opacity-100 transition-opacity">
                          {isLinked ? <CheckCircle2 className="text-green-500" size={16} /> : <div className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse" />}
                       </div>
-                      <div className="overflow-hidden rounded-xl border border-white/10 bg-black aspect-video flex items-center justify-center">
-                         <video 
-                           src={`/api/drive-view?fileId=${file.id}`} 
-                           controls 
-                           className="w-full h-full object-cover" 
-                         />
+                      <div className="overflow-hidden rounded-xl border border-white/10 bg-black/60 p-6 flex items-center justify-center">
+                         <a
+                           href={`https://drive.google.com/file/d/${file.id}/view`}
+                           target="_blank"
+                           rel="noopener noreferrer"
+                           className="px-4 py-2 bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500 hover:text-white rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all border border-indigo-500/20"
+                         >
+                           View on Drive
+                         </a>
                       </div>
                       <div className="space-y-1">
                         <div className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest line-clamp-1">{file.name}</div>

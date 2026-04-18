@@ -16,6 +16,30 @@
           "value": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' https://*.picsum.photos https://picsum.photos https://unscriptx-assets-2026.s3.ap-south-1.amazonaws.com data: blob:; connect-src 'self' https://*.googleapis.com https://www.googleapis.com https://unscriptx-assets-2026.s3.ap-south-1.amazonaws.com; media-src 'self' blob:; frame-ancestors 'none'"
         }
       ]
+    },
+    {
+      "source": "/slides/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+      ]
+    },
+    {
+      "source": "/logo.png",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+      ]
+    },
+    {
+      "source": "/assets/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+      ]
+    },
+    {
+      "source": "/(.*)\\.woff",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+      ]
     }
   ],
   "rewrites": [

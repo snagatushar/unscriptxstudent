@@ -7,12 +7,12 @@ import { motion, AnimatePresence } from 'motion/react';
  * No Supabase egress — images are served statically from the build.
  */
 const HERO_SLIDES: { image_url: string; duration_seconds: number }[] = [
-  { image_url: '/slides/codingslide.jpeg', duration_seconds: 3 },
-  { image_url: '/slides/danceslide.jpeg', duration_seconds: 3 },
-  { image_url: '/slides/dramaticsslide.jpeg', duration_seconds: 3 },
-  { image_url: '/slides/fashionslide.jpeg', duration_seconds: 3 },
-  { image_url: '/slides/musicslide.jpeg', duration_seconds: 3 },
-  { image_url: '/slides/sketchingslide.jpeg', duration_seconds: 3 },
+  { image_url: '/slides/codingslide.webp', duration_seconds: 3 },
+  { image_url: '/slides/danceslide.webp', duration_seconds: 3 },
+  { image_url: '/slides/dramaticsslide.webp', duration_seconds: 3 },
+  { image_url: '/slides/fashionslide.webp', duration_seconds: 3 },
+  { image_url: '/slides/musicslide.webp', duration_seconds: 3 },
+  { image_url: '/slides/sketchingslide.webp', duration_seconds: 3 },
 ];
 
 const Hero = () => {

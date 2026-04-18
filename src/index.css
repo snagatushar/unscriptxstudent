@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
+/* Google Fonts loaded via index.html <link> — do NOT duplicate here */
 @import "tailwindcss";
 
 @font-face {
@@ -62,5 +62,40 @@ aside::-webkit-scrollbar-thumb {
 }
 aside::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.15);
+}
+
+/* Background mesh gradient animations — GPU-accelerated, zero JS */
+@keyframes mesh1 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(100px, 50px) scale(1.2); }
+}
+@keyframes mesh2 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(-150px, 100px) scale(1.5); }
+}
+@keyframes mesh3 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(50px, -100px) scale(1.3); }
+}
+@keyframes particle-float {
+  0%, 100% { transform: translateY(0); opacity: 0.2; }
+  50% { transform: translateY(-20px); opacity: 0.5; }
+}
+
+.animate-mesh-1 {
+  animation: mesh1 20s linear infinite;
+  will-change: transform;
+}
+.animate-mesh-2 {
+  animation: mesh2 25s linear infinite;
+  will-change: transform;
+}
+.animate-mesh-3 {
+  animation: mesh3 18s linear infinite;
+  will-change: transform;
+}
+.animate-particle {
+  animation: particle-float 4s ease-in-out infinite;
+  will-change: transform, opacity;
 }
 

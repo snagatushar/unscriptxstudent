@@ -59,7 +59,7 @@ const COMMITTEE_MEMBERS = [
 const WHY_JOIN = {
   title: "[Why wait for the future] when you can create it?",
   body: "UNSCRIPTX is more than just a fest. It's a platform where creativity meets competition, and passion meets performance. Join thousands of students in the biggest celebration of talent.",
-  image_url: "/music.png",
+  image_url: "/music.webp",
   features: [
     { id: 'f1', title: 'Musical Nights', color: 'text-fest-primary' },
     { id: 'f2', title: 'High Energy', color: 'text-fest-accent' },
@@ -110,7 +110,7 @@ export default function Home() {
           >
             <div className="w-full aspect-video rounded-[2rem] overflow-hidden border-4 border-white/10 relative">
               <div className="absolute inset-0 bg-fest-primary/20 mix-blend-overlay"></div>
-              <img src={ABOUT_COLLEGE.image_url} alt="College Campus" className="w-full h-full object-cover" />
+              <img src={ABOUT_COLLEGE.image_url} alt="College Campus" className="w-full h-full object-cover" loading="lazy" decoding="async" />
             </div>
           </motion.div>
 
@@ -320,16 +320,17 @@ export default function Home() {
             </div>
 
             <div className="relative">
-              <motion.div
-                animate={{ rotate: 360 }}
-                transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-                className="absolute inset-0 border-2 border-dashed border-white/10 rounded-full"
+              <div
+                className="absolute inset-0 border-2 border-dashed border-white/10 rounded-full animate-spin"
+                style={{ animationDuration: '20s' }}
               />
               <img
                 src={WHY_JOIN.image_url}
                 alt="Fest Crowd"
                 className="rounded-full w-full aspect-square object-cover border-8 border-white/5"
                 referrerPolicy="no-referrer"
+                loading="lazy"
+                decoding="async"
               />
             </div>
           </div>

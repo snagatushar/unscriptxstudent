@@ -7,7 +7,7 @@ import { AppRole, CommitteeMember, DatabaseEvent, GeneralRule, HeroSlide, Qualif
 import { useAuth } from '../contexts/AuthContext';
 import { exportToExcel } from '../lib/excel';
 import { openPaymentScreenshot, openIdCard, uploadToS3, deleteFromS3 } from '../lib/storage';
-import { getDriveStreamUrl } from '../lib/drive';
+// Drive streaming removed to save bandwidth — videos are viewed directly on Google Drive
 import { 
   Activity,
   History,
@@ -108,22 +108,17 @@ function getNextRound(stage: QualificationStage): { id: QualificationStage; name
 }
 
 function VideoPreview({ submission, eventTitle, onSave, isPast }: { submission: any; eventTitle: string; onSave: (id: string, score: number, remarks: string) => void; isPast?: boolean }) {
-  const [videoUrl, setVideoUrl] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
   const [score, setScore] = useState(0);
   const [remarks, setRemarks] = useState('');
 
   // Always sync state with the actual data from props
   useEffect(() => {
     async function syncData() {
-      // If props already have results, use them
       if (submission.internal_reviews && submission.internal_reviews.length > 0) {
         setScore(submission.internal_reviews[0].score || 0);
         setRemarks(submission.internal_reviews[0].judge_remarks || '');
         return;
       }
-
-      // Fallback: Fetch directly from the table if props are empty
       try {
         const reviews = await api.get<any[]>(`/api/admin?resource=internal_reviews`);
         const data = reviews.find(r => r.submission_id === submission.id);
@@ -137,28 +132,6 @@ function VideoPreview({ submission, eventTitle, onSave, isPast }: { submission: 
     }
     syncData();
   }, [submission]);
-
-  useEffect(() => {
-    async function getUrl() {
-      try {
-        const url = await getDriveStreamUrl(submission.video_path);
-        setVideoUrl(url);
-      } catch (error) {
-        console.error('Error creating signed URL:', error);
-        setVideoUrl(null);
-      }
-      setLoading(false);
-    }
-    getUrl();
-  }, [submission.video_path, eventTitle]);
-
-  if (loading) return (
-    <div className="w-full h-32 rounded-xl bg-white/5 flex items-center justify-center border border-white/10 animate-pulse">
-      <Loader2 className="animate-spin text-white/20" size={16} />
-    </div>
-  );
-
-  if (!videoUrl) return null;
 
   return (
     <div className={`space-y-4 p-4 rounded-2xl border transition-all ${isPast ? 'bg-white/2 border-white/5' : 'bg-black/40 border-white/10'}`}>
@@ -194,11 +167,25 @@ function VideoPreview({ submission, eventTitle, onSave, isPast }: { submission: 
         </button>
       </div>
 
-      <video 
-        src={videoUrl} 
-        controls 
-        className="w-full aspect-video rounded-xl bg-black border border-white/10 shadow-[0_0_20px_rgba(0,0,0,0.5)]" 
-      />
+      {/* Video info card instead of streaming the video (saves bandwidth) */}
+      <div className="w-full rounded-xl bg-black/60 border border-white/10 p-4 flex items-center gap-4">
+        <div className="w-12 h-12 rounded-xl bg-fest-primary/10 border border-fest-primary/20 flex items-center justify-center shrink-0">
+          <Video size={20} className="text-fest-primary" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="text-xs font-bold text-white/70">Video Submitted</div>
+          <div className="text-[10px] text-white/30 mt-0.5 truncate">ID: {submission.video_path || submission.video_url || 'N/A'}</div>
+          <div className="text-[10px] text-white/30 mt-0.5">{new Date(submission.created_at).toLocaleString()}</div>
+        </div>
+        <a
+          href={`https://drive.google.com/file/d/${submission.video_path || submission.video_url}/view`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="px-3 py-2 bg-fest-primary/10 text-fest-primary hover:bg-fest-primary hover:text-fest-dark rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all border border-fest-primary/20 shrink-0"
+        >
+          View on Drive
+        </a>
+      </div>
 
       <div className="rounded-xl px-3 py-2 border bg-black/30 border-white/10">
         <textarea

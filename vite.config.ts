@@ -30,7 +30,8 @@ export default defineConfig(({mode}) => {
           manualChunks: {
             'vendor-react': ['react', 'react-dom', 'react-router-dom'],
             'vendor-motion': ['motion/react'],
-            'vendor-excel': ['exceljs', 'file-saver'],
+            'vendor-icons': ['lucide-react'],
+            'vendor-ui': ['react-hot-toast'],
           },
         },
       },

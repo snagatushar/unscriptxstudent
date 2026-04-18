@@ -30,6 +30,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         WHERE e.is_active = true 
         ORDER BY e.created_at DESC
       `);
+      res.setHeader('Cache-Control', 's-maxage=300, stale-while-revalidate=600');
       return res.status(200).json(result.rows);
     }
 
@@ -69,11 +70,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     if (resource === 'committee') {
        const result = await query('SELECT * FROM committee ORDER BY display_order ASC');
+       res.setHeader('Cache-Control', 's-maxage=600, stale-while-revalidate=1200');
        return res.status(200).json(result.rows);
     }
 
     if (resource === 'general_rules') {
        const result = await query('SELECT * FROM general_rules ORDER BY display_order ASC');
+       res.setHeader('Cache-Control', 's-maxage=600, stale-while-revalidate=1200');
        return res.status(200).json(result.rows);
     }
 
