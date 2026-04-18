@@ -1,24 +1,11 @@
+import { api } from './api';
+
 export async function uploadToS3(file: File, folder: string): Promise<{ key: string, publicUrl: string }> {
   const fileType = file.type || 'application/octet-stream';
   const fileName = file.name;
 
-  const token = localStorage.getItem('unscriptx_token');
-  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-  if (token) headers['Authorization'] = `Bearer ${token}`;
-
   // 1. Get presigned URL via Hub
-  const response = await fetch('/api/storage-hub?action=presign', {
-    method: 'POST',
-    headers,
-    body: JSON.stringify({ fileName, fileType, folder })
-  });
-
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.error || 'Failed to get upload URL');
-  }
-
-  const { uploadUrl, key } = await response.json();
+  const { uploadUrl, key } = await api.post<{uploadUrl: string, key: string}>('/api/storage-hub?action=presign', { fileName, fileType, folder });
 
   // 2. Upload file directly to S3
   const uploadResponse = await fetch(uploadUrl, {
@@ -35,20 +22,7 @@ export async function uploadToS3(file: File, folder: string): Promise<{ key: str
 }
 
 export async function deleteFromS3(key: string): Promise<void> {
-  const token = localStorage.getItem('unscriptx_token');
-  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-  if (token) headers['Authorization'] = `Bearer ${token}`;
-
-  const response = await fetch('/api/storage-hub?action=delete', {
-    method: 'POST',
-    headers,
-    body: JSON.stringify({ key })
-  });
-
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.error || 'Failed to delete file from S3');
-  }
+  await api.post('/api/storage-hub?action=delete', { key });
 }
 
 export async function openPaymentScreenshot(value: string) {

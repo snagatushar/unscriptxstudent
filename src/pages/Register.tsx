@@ -4,6 +4,7 @@ import { CheckCircle2, Send, UploadCloud, Loader2, Users } from 'lucide-react';
 import { useParams, Link } from 'react-router-dom';
 
 import { uploadToS3 } from '../lib/storage';
+import { api } from '../lib/api';
 import { useAuth } from '../contexts/AuthContext';
 import { DatabaseEvent } from '../types';
 import toast from 'react-hot-toast';
@@ -37,10 +38,9 @@ export default function Register() {
       if (!eventId) return;
 
       try {
-        const url = `/api/participant-hub?action=event-data&eventId=${eventId}` + (user ? `&userId=${user.id}` : '');
-        const res = await fetch(url);
-        if (!res.ok) throw new Error('Could not load event data');
-        const data = await res.json();
+        const data = await api.get<{ event: DatabaseEvent; registeredCategories?: string[] }>(
+          `/api/participant-hub?action=event-data&eventId=${eventId}${user ? `&userId=${user.id}` : ''}`
+        );
 
         setEvent(data.event);
         setTeamSize(1);
@@ -130,16 +130,7 @@ export default function Register() {
         id_card_url: idCardKey,
       };
 
-      const res = await fetch('/api/participant-hub?action=register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-
-      if (!res.ok) {
-        const errorData = await res.json().catch(() => ({}));
-        throw new Error(errorData.error || 'Registration failed. Please try again or contact support.');
-      }
+      await api.post('/api/participant-hub?action=register', payload);
 
       toast.success('Registration successful. Wait up to 24 hours for payment approval.');
       // Track the newly registered subcategory

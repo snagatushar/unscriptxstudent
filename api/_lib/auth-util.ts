@@ -11,7 +11,7 @@ export async function verifyUserToken(req: any) {
   if (!token && req.query?.token) {
     token = req.query.token as string;
   }
-  if (!token) throw new Error('Unauthorized');
+  if (!token) throw new Error('Unauthorized: Missing bearer token in headers (' + (req.url || 'unknown path') + ')');
 
   try {
     const decoded: any = jwt.verify(token, JWT_SECRET);
