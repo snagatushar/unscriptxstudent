@@ -305,8 +305,9 @@ export default function AdminDashboard() {
     try {
       const data = await api.get<AuditLogRow[]>('/api/admin?resource=audit_logs_detailed');
       setAuditLogs(data);
-    } catch (err) {
-      console.error('Failed to fetch audit logs');
+    } catch (err: any) {
+      console.error('Failed to fetch audit logs', err);
+      toast.error(err.message || 'Failed to fetch audit logs');
     }
   };
 
