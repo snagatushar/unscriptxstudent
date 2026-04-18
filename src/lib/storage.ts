@@ -1,8 +1,13 @@
 import { api } from './api';
 
-export async function uploadToS3(file: File, folder: string): Promise<{ key: string, publicUrl: string }> {
+export async function uploadToS3(file: File, folder: string, customPrefix?: string): Promise<{ key: string, publicUrl: string }> {
   const fileType = file.type || 'application/octet-stream';
-  const fileName = file.name;
+  let fileName = file.name;
+
+  if (customPrefix) {
+    const extension = file.name.split('.').pop() || 'png';
+    fileName = `${customPrefix}.${extension}`;
+  }
 
   // 1. Get presigned URL via Hub
   const { uploadUrl, key } = await api.post<{uploadUrl: string, key: string}>('/api/storage-hub?action=presign', { fileName, fileType, folder });

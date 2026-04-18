@@ -107,11 +107,18 @@ export default function Register() {
 
     setSubmitting(true);
     try {
+      // Generate descriptive file prefixes for S3 organization
+      const safeEventTitle = (event?.title || 'event').replace(/[^a-zA-Z0-9]/g, '_').toLowerCase();
+      const safeUserName = fullName.replace(/[^a-zA-Z0-9]/g, '_').toLowerCase() || 'student';
+      
+      const paymentPrefix = `${safeEventTitle}_${safeUserName}_payment`;
+      const idPrefix = `${safeEventTitle}_${safeUserName}_id`;
+
       // 1. Upload Payment Screenshot
-      const { key: paymentKey } = await uploadToS3(paymentFile, 'payments');
+      const { key: paymentKey } = await uploadToS3(paymentFile, 'payments', paymentPrefix);
 
       // 2. Upload ID Card
-      const { key: idCardKey } = await uploadToS3(idCardFile, 'id_cards');
+      const { key: idCardKey } = await uploadToS3(idCardFile, 'id_cards', idPrefix);
 
       const payload = {
         user_id: user.id,
