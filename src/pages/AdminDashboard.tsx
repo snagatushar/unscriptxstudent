@@ -1021,12 +1021,26 @@ export default function AdminDashboard() {
     await exportToExcel(rows, 'Registrations', `${safeName}_registrations_export.xlsx`);
     toast.success('Excel exported.');
   };
-
-  const handleDeleteRegistration = async (id: string, name: string) => {
-    if (!window.confirm(`Permanently delete registration for ${name}?`)) return;
+  const handleDeleteRegistration = async (reg: any) => {
+    const name = reg.participant_name || reg.participant_user?.full_name || reg.participant_user?.email || 'N/A';
+    if (!window.confirm(`Permanently delete registration for ${name} and all associated files?`)) return;
 
     try {
-      await api.post('/api/admin', { action: 'delete', table: 'registrations', id });
+      if (reg.payment_screenshot_url) {
+        await deleteFromS3(reg.payment_screenshot_url).catch(e => console.error('Failed to delete payment screenshot', e));
+      }
+      if (reg.id_card_url) {
+        await deleteFromS3(reg.id_card_url).catch(e => console.error('Failed to delete ID card', e));
+      }
+      if (reg.submissions && reg.submissions.length > 0) {
+        for (const sub of reg.submissions) {
+          if (sub.video_url) {
+            await deleteFromS3(sub.video_url).catch(e => console.error('Failed to delete submission video', e));
+          }
+        }
+      }
+
+      await api.post('/api/admin', { action: 'delete', table: 'registrations', id: reg.id });
       toast.success('Registration deleted.');
       await fetchData();
     } catch (err: any) {
@@ -3450,8 +3464,7 @@ export default function AdminDashboard() {
                                   <td className="px-10 py-8 text-right">
                                     <button 
                                       onClick={() => {
-                                        const name = reg.participant_name || reg.participant_user?.full_name || reg.participant_user?.email || 'N/A';
-                                        void handleDeleteRegistration(reg.id, name);
+                                        void handleDeleteRegistration(reg);
                                       }} 
                                       className="p-3 text-white/20 hover:text-red-500 transition-colors"
                                     >
