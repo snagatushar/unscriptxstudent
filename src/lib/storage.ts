@@ -38,15 +38,13 @@ export async function openPaymentScreenshot(value: string) {
      return;
   }
 
-  const response = await fetch(`/api/storage-hub?action=view&key=${encodeURIComponent(value)}`);
-  
-  if (!response.ok) {
-     const errorData = await response.json().catch(() => ({}));
-     throw new Error(errorData.error || 'Failed to get file URL');
+  if (value.startsWith('/api/')) {
+     window.open(value, '_blank', 'noopener,noreferrer');
+     return;
   }
 
-  const { url } = await response.json();
-  window.open(url, '_blank', 'noopener,noreferrer');
+  // If it's just the raw S3 key, construct the view URL
+  window.open(`/api/storage-hub?action=view&key=${encodeURIComponent(value)}`, '_blank', 'noopener,noreferrer');
 }
 
 export async function openIdCard(value: string) {
@@ -57,13 +55,11 @@ export async function openIdCard(value: string) {
      return;
   }
 
-  const response = await fetch(`/api/storage-hub?action=view&key=${encodeURIComponent(value)}`);
-  
-  if (!response.ok) {
-     const errorData = await response.json().catch(() => ({}));
-     throw new Error(errorData.error || 'Failed to get file URL');
+  if (value.startsWith('/api/')) {
+     window.open(value, '_blank', 'noopener,noreferrer');
+     return;
   }
 
-  const { url } = await response.json();
-  window.open(url, '_blank', 'noopener,noreferrer');
+  // If it's just the raw S3 key, construct the view URL
+  window.open(`/api/storage-hub?action=view&key=${encodeURIComponent(value)}`, '_blank', 'noopener,noreferrer');
 }
