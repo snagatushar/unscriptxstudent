@@ -3,7 +3,7 @@ import { Resend } from 'resend';
 const RESEND_API_KEY = process.env.RESEND_API_KEY || '';
 // In Resend, untik your domain is verified, you can only send FROM onboarding@resend.dev TO your verified email.
 // Once verified, set process.env.RESEND_SENDER to your domain email (e.g. support@unscriptx.com).
-const RESEND_SENDER = process.env.RESEND_SENDER || 'onboarding@resend.dev';
+const RESEND_SENDER = (process.env.RESEND_SENDER || 'onboarding@resend.dev').replace(/^["']|["']$/g, '').trim();
 
 const resend = new Resend(RESEND_API_KEY);
 
