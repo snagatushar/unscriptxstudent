@@ -43,6 +43,8 @@ export interface DatabaseEvent {
   participants_count?: number;
   sub_categories?: string[] | null;
   requires_team_details?: boolean;
+  requires_video_submission?: boolean;
+  verified_success_message?: string;
 }
 
 

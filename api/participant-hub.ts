@@ -54,7 +54,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           COALESCE(r.payment_status, 'pending') as payment_status,
           e.title as event_title, 
           e.category as event_category, 
-          e.image_url as event_image_url
+          e.image_url as event_image_url,
+          e.requires_video_submission,
+          e.verified_success_message
         FROM registrations r
         JOIN events e ON r.event_id = e.id
         WHERE r.user_id = $1

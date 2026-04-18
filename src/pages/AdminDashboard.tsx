@@ -228,6 +228,8 @@ const emptyEventForm = {
   rules: '',
   sub_categories: [] as string[],
   requires_team_details: false,
+  requires_video_submission: true,
+  verified_success_message: '',
 };
 
 const defaultSiteContent = (contentKey: string): SiteContent => ({
@@ -557,6 +559,8 @@ export default function AdminDashboard() {
       rules: (event.rules || []).join('\n'),
       sub_categories: event.sub_categories || [],
       requires_team_details: !!event.requires_team_details,
+      requires_video_submission: event.requires_video_submission ?? true,
+      verified_success_message: event.verified_success_message || '',
     });
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -816,6 +820,8 @@ export default function AdminDashboard() {
         rules: rulesArray,
         is_active: true,
         sub_categories: newEvent.sub_categories,
+        requires_video_submission: newEvent.requires_video_submission,
+        verified_success_message: newEvent.verified_success_message.trim(),
       };
 
       const action = editingEventId ? 'update' : 'insert';
@@ -1523,6 +1529,32 @@ export default function AdminDashboard() {
                   <input placeholder="IFSC" className="rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-sm outline-none focus:border-fest-primary" value={newEvent.payment_ifsc} onChange={(e) => setNewEvent({ ...newEvent, payment_ifsc: e.target.value })} />
                 </div>
                 <input placeholder="UPI ID" className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-sm outline-none focus:border-fest-primary" value={newEvent.payment_upi_id} onChange={(e) => setNewEvent({ ...newEvent, payment_upi_id: e.target.value })} />
+                
+                {/* Event Delivery Settings */}
+                <div className="space-y-4 rounded-2xl border border-white/10 bg-white/5 p-4">
+                  <div className="flex items-center gap-3 cursor-pointer select-none" onClick={() => setNewEvent({ ...newEvent, requires_video_submission: !newEvent.requires_video_submission })}>
+                    <div className={`w-10 h-5 rounded-full relative transition-all ${newEvent.requires_video_submission ? 'bg-fest-primary' : 'bg-white/10'}`}>
+                      <div className={`absolute top-1 w-3 h-3 rounded-full bg-fest-dark transition-all ${newEvent.requires_video_submission ? 'right-1' : 'left-1'}`} />
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-xs font-bold uppercase tracking-widest text-white/70">Show "Upload Video" Button?</span>
+                      <span className="text-[10px] text-white/30 truncate">If disabled, the verified success message is shown instead of a video upload button.</span>
+                    </div>
+                  </div>
+
+                  {!newEvent.requires_video_submission && (
+                    <div className="pt-2 border-t border-white/10 animate-fade-in">
+                      <label className="text-[10px] font-bold uppercase text-white/30 ml-1 mb-2 block tracking-widest">Verified Success Message</label>
+                      <textarea
+                        placeholder="e.g. Your payment has been verified! The event is on 25th May at 10:00 AM in the Main Auditorium."
+                        className="w-full h-24 rounded-xl bg-black/40 border border-white/10 px-4 py-3 text-sm outline-none focus:border-green-500/50 resize-none"
+                        value={newEvent.verified_success_message}
+                        onChange={(e) => setNewEvent({ ...newEvent, verified_success_message: e.target.value })}
+                      />
+                    </div>
+                  )}
+                </div>
+
                 <textarea placeholder="Rules, one per line" className="w-full h-28 rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-sm outline-none focus:border-fest-primary resize-none" value={newEvent.rules} onChange={(e) => setNewEvent({ ...newEvent, rules: e.target.value })} />
                 <button type="submit" className="w-full py-4 bg-fest-primary text-fest-dark font-black uppercase tracking-widest rounded-xl hover:bg-fest-primary-light transition-all shadow-lg glow-primary">
                   {editingEventId ? 'Update Event' : 'Create Event'}

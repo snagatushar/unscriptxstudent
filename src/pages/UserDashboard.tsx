@@ -22,6 +22,8 @@ type UserRegistration = {
   event_category: string;
   sub_category: string | null;
   submissions?: Submission[];
+  requires_video_submission?: boolean;
+  verified_success_message?: string;
 };
 
 function getReviewLabel(status: ReviewStatus) {
@@ -198,38 +200,44 @@ export default function UserDashboard() {
 
                 {registration.payment_status === 'approved' && (
                   <div className="space-y-4">
-                    {(() => {
-                      const next = getNextRound(registration.qualification_stage);
-                      const hasSubmittedForNext = registration.submissions?.some(s => s.round === next?.id);
+                    {registration.requires_video_submission === false ? (
+                      <div className="text-center p-5 border border-green-500/30 rounded-2xl bg-green-500/10 text-sm text-green-100/90 leading-relaxed font-medium">
+                        {registration.verified_success_message || "Your payment is verified! Details regarding timings and location are secured."}
+                      </div>
+                    ) : (
+                      (() => {
+                        const next = getNextRound(registration.qualification_stage);
+                        const hasSubmittedForNext = registration.submissions?.some(s => s.round === next?.id);
 
-                      if (next && !hasSubmittedForNext) {
-                        return (
-                          <button
-                            onClick={() => setUploadModal({
-                              isOpen: true,
-                              regId: registration.id,
-                              round: next.id,
-                              roundName: next.name,
-                              eventTitle: registration.event_title,
-                              subCategory: registration.sub_category || '',
-                            })}
-                            className="w-full py-4 bg-fest-primary text-fest-dark rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-fest-primary-light transition-all flex items-center justify-center gap-2 glow-primary"
-                          >
-                            <Video size={18} /> Upload for {next.name}
-                          </button>
-                        );
-                      }
+                        if (next && !hasSubmittedForNext) {
+                          return (
+                            <button
+                              onClick={() => setUploadModal({
+                                isOpen: true,
+                                regId: registration.id,
+                                round: next.id,
+                                roundName: next.name,
+                                eventTitle: registration.event_title,
+                                subCategory: registration.sub_category || '',
+                              })}
+                              className="w-full py-4 bg-fest-primary text-fest-dark rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-fest-primary-light transition-all flex items-center justify-center gap-2 glow-primary"
+                            >
+                              <Video size={18} /> Upload for {next.name}
+                            </button>
+                          );
+                        }
 
-                      if (hasSubmittedForNext) {
-                        return (
-                          <div className="text-center text-[10px] uppercase tracking-widest text-fest-primary/70 p-4 border border-fest-primary/20 rounded-2xl bg-fest-primary/5 flex flex-col gap-1 items-center">
-                            <CheckCircle size={14} /> Submission for {next?.name} Received
-                          </div>
-                        );
-                      }
+                        if (hasSubmittedForNext) {
+                          return (
+                            <div className="text-center text-[10px] uppercase tracking-widest text-fest-primary/70 p-4 border border-fest-primary/20 rounded-2xl bg-fest-primary/5 flex flex-col gap-1 items-center">
+                              <CheckCircle size={14} /> Submission for {next?.name} Received
+                            </div>
+                          );
+                        }
 
-                      return null;
-                    })()}
+                        return null;
+                      })()
+                    )}
                   </div>
                 )}
 
