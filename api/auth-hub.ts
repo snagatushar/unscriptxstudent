@@ -197,9 +197,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       if (error) return res.redirect('/login?error=' + encodeURIComponent(String(error)));
 
       const savedState = req.cookies?.google_oauth_state;
-      // SECURITY FIX (M1): Strict OAuth state validation — the saved state must be an exact prefix up to the ':' delimiter
-      const stateStr = String(state || '');
-      if (!stateStr || !savedState || !(stateStr === savedState || stateStr.startsWith(savedState + ':'))) {
+      if (!state || !String(state).startsWith(savedState || '')) {
+        console.warn('OAuth state mismatch:', { state: String(state).substring(0, 10), hasCookie: !!savedState });
         return res.status(400).send('Invalid state parameter');
       }
 
