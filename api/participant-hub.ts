@@ -74,12 +74,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // --- Action: Register (POST) ---
     if (action === 'register' && req.method === 'POST') {
       const {
-        user_id, event_id, participant_name, email, phone, college_name,
+        event_id, participant_name, email, phone, college_name,
         department, year_of_study, team_name, team_size, sub_category,
         team_members, payment_screenshot_url, id_card_url
       } = req.body;
 
-      if (!user_id || !event_id || !payment_screenshot_url || !id_card_url) {
+      // SECURITY FIX (C1): Always use the authenticated user's ID from JWT, never trust client-supplied user_id
+      const user_id = userId;
+
+      if (!event_id || !payment_screenshot_url || !id_card_url) {
         return res.status(400).json({ error: 'Missing required registration parameters' });
       }
 

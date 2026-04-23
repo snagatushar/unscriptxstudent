@@ -194,6 +194,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
          if (action === 'update') {
             const keys = Object.keys(record);
+            const RESTRICTED_USER_FIELDS = ['password_hash', 'id', 'email', 'role'];
+            if (safeTable === 'users' && keys.some(k => RESTRICTED_USER_FIELDS.includes(k))) {
+               return res.status(403).json({ error: 'Cannot modify restricted user fields via generic update.' });
+            }
             const values = Object.values(record);
             const setStr = keys.map((k, i) => {
                if (!/^[a-z0-9_]+$/.test(k)) throw new Error("Invalid field name");
@@ -206,6 +210,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
          if (action === 'upsert') {
             const { conflict_target } = req.body;
             const keys = Object.keys(record);
+            const RESTRICTED_USER_FIELDS = ['password_hash', 'id', 'email', 'role'];
+            if (safeTable === 'users' && keys.some(k => RESTRICTED_USER_FIELDS.includes(k))) {
+               return res.status(403).json({ error: 'Cannot modify restricted user fields via generic upsert.' });
+            }
             const values = Object.values(record);
             const valsStr = keys.map((_, i) => `$${i+1}`).join(', ');
             const updateStr = keys.map((k, i) => {
@@ -220,6 +228,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
          if (action === 'insert') {
             const keys = Object.keys(record);
+            keys.forEach(k => {
+               if (!/^[a-z0-9_]+$/.test(k)) throw new Error("Invalid field name");
+            });
             const values = Object.values(record);
             const valsStr = keys.map((_, i) => `$${i+1}`).join(', ');
             const result = await query(`INSERT INTO ${safeTable} (${keys.join(', ')}) VALUES (${valsStr}) RETURNING *`, values);
@@ -230,6 +241,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       if (action === 'update_role') {
          if (decoded.role !== 'admin') return res.status(403).json({ error: 'Only admins can change roles.' });
          const { email, role } = req.body;
+         const VALID_ROLES = ['user', 'judge', 'payment_reviewer', 'content_reviewer', 'admin'];
+         if (!VALID_ROLES.includes(role)) {
+            return res.status(400).json({ error: 'Invalid role value' });
+         }
          await query(`UPDATE users SET role = $1 WHERE email = $2`, [role, email]);
          return res.status(200).json({ success: true });
       }
@@ -237,6 +252,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(400).json({ error: 'Invalid request' });
   } catch (err: any) {
     console.error('API Error:', err);
-    return res.status(500).json({ error: err.message });
+    return res.status(500).json({ error: 'An internal error occurred. Please try again.' });
   }
 }

@@ -2,7 +2,7 @@ import { VercelRequest, VercelResponse } from '@vercel/node';
 import { PutObjectCommand, GetObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { s3Client } from './_lib/s3-client.js';
-import { verifyUserToken } from './_lib/auth-util.js';
+import { verifyUserToken, verifyAdmin } from './_lib/auth-util.js';
 import { setCors, handlePreflight } from './_lib/cors.js';
 
 const MIME_ALLOW_LIST = [
@@ -52,15 +52,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // --- Action: View (GET) ---
     if (action === 'view' && req.method === 'GET') {
+      // SECURITY FIX (C2): Require authentication for ALL file views
+      await verifyUserToken(req);
       const { key } = req.query;
 
       if (!key || typeof key !== 'string') {
         return res.status(400).json({ error: 'Missing object key' });
       }
 
-      // Authorization Logic for specific folders
-      if (key.startsWith('evidence/') || key.startsWith('submissions/')) {
-        await verifyUserToken(req);
+      // SECURITY FIX (C2): Prevent path traversal attacks
+      if (key.includes('..') || key.startsWith('/')) {
+        return res.status(400).json({ error: 'Invalid object key' });
       }
 
       const command = new GetObjectCommand({
@@ -75,11 +77,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // --- Action: Delete (POST/DELETE) ---
     if ((action === 'delete') && (req.method === 'POST' || req.method === 'DELETE')) {
-      await verifyUserToken(req); // Only authenticated users can delete
+      // SECURITY FIX (C3): Only admins can delete files — prevents arbitrary file deletion by regular users
+      await verifyAdmin(req);
       const key = req.method === 'POST' ? req.body.key : req.query.key;
 
       if (!key) {
         return res.status(400).json({ error: 'Missing object key to delete' });
+      }
+
+      // SECURITY FIX (C3): Prevent path traversal in delete keys
+      if (typeof key === 'string' && (key.includes('..') || key.startsWith('/'))) {
+        return res.status(400).json({ error: 'Invalid object key' });
       }
 
       const command = new DeleteObjectCommand({

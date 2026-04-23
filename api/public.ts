@@ -82,7 +82,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     return res.status(400).json({ error: 'Invalid resource' });
   } catch (err: any) {
+    // SECURITY FIX (H3): Don't leak internal error details to client
     console.error('Public API Error:', err);
-    return res.status(500).json({ error: err.message || 'Failed to fetch public data' });
+    return res.status(500).json({ error: 'Failed to fetch public data' });
   }
 }

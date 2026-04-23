@@ -7,11 +7,10 @@ if (!JWT_SECRET) {
 }
 
 export async function verifyUserToken(req: any) {
-  let token = req.headers?.authorization?.replace('Bearer ', '');
-  if (!token && req.query?.token) {
-    token = req.query.token as string;
-  }
-  if (!token) throw new Error('Unauthorized: Missing bearer token in headers (' + (req.url || 'unknown path') + ')');
+  // SECURITY FIX (M4): Only accept tokens from Authorization header, not query strings
+  // (query params get logged in server access logs and browser history)
+  const token = req.headers?.authorization?.replace('Bearer ', '');
+  if (!token) throw new Error('Unauthorized: Missing bearer token');
 
   try {
     const decoded: any = jwt.verify(token, JWT_SECRET);

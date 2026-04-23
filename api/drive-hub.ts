@@ -110,6 +110,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // --- Action: View (Proxy Stream) ---
     if (action === 'view') {
+      // SECURITY FIX (C4): Require authentication for Drive file access
+      await verifyUserToken(req);
       const { fileId } = req.query;
       if (!fileId || typeof fileId !== 'string') return res.status(400).json({ error: 'Missing fileId' });
 

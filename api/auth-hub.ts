@@ -32,6 +32,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const body = req.body || {};
       const { email, password, name } = body;
 
+      // SECURITY FIX (H4): Validate required fields
+      if (!email || !password || !name) {
+        return res.status(400).json({ error: 'Name, email, and password are required' });
+      }
+
+      // SECURITY FIX (H4): Validate email format
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        return res.status(400).json({ error: 'Invalid email format' });
+      }
+
+      // SECURITY FIX (H1): Enforce minimum password strength
+      if (password.length < 8) {
+        return res.status(400).json({ error: 'Password must be at least 8 characters' });
+      }
+
       const domain = email?.split('@')[1]?.toLowerCase();
       if (domain) {
         const blockedRes = await query('SELECT domain FROM blocked_domains WHERE domain = $1', [domain]);
@@ -135,6 +150,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
       if (!password || !token) return res.status(400).json({ error: 'Missing password or verification token' });
 
+      // SECURITY FIX (H1): Enforce minimum password strength on reset
+      if (password.length < 8) {
+        return res.status(400).json({ error: 'Password must be at least 8 characters' });
+      }
+
       try {
         // 1. Verify token
         const decoded = jwt.verify(token, JWT_SECRET) as any;
@@ -150,7 +170,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         return res.status(200).json({ success: true, message: 'Password updated successfully' });
       } catch (err: any) {
         console.error('Update password error:', err.message);
-        return res.status(400).json({ error: 'Failed to update password: ' + (err.message || 'Invalid or expired reset token') });
+        // SECURITY FIX (H3): Don't leak internal error details to client
+        return res.status(400).json({ error: 'Failed to update password. The reset link may be invalid or expired.' });
       }
     }
 
@@ -176,7 +197,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       if (error) return res.redirect('/login?error=' + encodeURIComponent(String(error)));
 
       const savedState = req.cookies?.google_oauth_state;
-      if (!state || !String(state).startsWith(savedState || '')) {
+      // SECURITY FIX (M1): Strict OAuth state validation — the saved state must be an exact prefix up to the ':' delimiter
+      const stateStr = String(state || '');
+      if (!stateStr || !savedState || !(stateStr === savedState || stateStr.startsWith(savedState + ':'))) {
         return res.status(400).send('Invalid state parameter');
       }
 
@@ -238,7 +261,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     return res.status(400).json({ error: 'Invalid action' });
   } catch (error: any) {
+    // SECURITY FIX (H3): Don't leak internal error details to client
     console.error('Auth Hub Error:', error);
-    return res.status(500).json({ error: error.message || 'Auth operation failed' });
+    return res.status(500).json({ error: 'An internal error occurred. Please try again.' });
   }
 }

@@ -7,7 +7,20 @@ const RESEND_SENDER = (process.env.RESEND_SENDER || 'onboarding@resend.dev').rep
 
 const resend = new Resend(RESEND_API_KEY);
 
+// SECURITY FIX (H2): Escape HTML special characters to prevent XSS in email templates
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
 export async function sendResetEmail(email: string, resetLink: string) {
+  // SECURITY FIX (H2): Sanitize the reset link before embedding in HTML
+  const safeLink = escapeHtml(resetLink);
+
   if (!RESEND_API_KEY) {
     console.warn("RESEND_API_KEY is not set. Simulating reset email in development mode:");
     console.log(`[SIMULATED EMAIL TO: ${email}] Reset Link: ${resetLink}`);
@@ -24,10 +37,10 @@ export async function sendResetEmail(email: string, resetLink: string) {
           <h2 style="color: #333;">Password Reset Request</h2>
           <p>You requested to reset your password for your Unscriptx account. Click the button below to set a new one. This link will expire in 1 hour.</p>
           <div style="text-align: center; margin: 30px 0;">
-            <a href="${resetLink}" style="background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold;">Reset Password</a>
+            <a href="${safeLink}" style="background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold;">Reset Password</a>
           </div>
           <p style="color: #666; font-size: 14px;">If the button doesn't work, copy and paste this link into your browser:</p>
-          <p style="color: #666; font-size: 12px; word-break: break-all;">${resetLink}</p>
+          <p style="color: #666; font-size: 12px; word-break: break-all;">${safeLink}</p>
           <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
           <p style="color: #999; font-size: 12px;">If you didn't request this, you can safely ignore this email.</p>
         </div>
