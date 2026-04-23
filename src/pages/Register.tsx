@@ -44,7 +44,7 @@ export default function Register() {
 
         setEvent(data.event);
         setTeamSize(1);
-        
+
         if (data.registeredCategories) {
           setRegisteredSubCategories(data.registeredCategories);
         }
@@ -72,7 +72,7 @@ export default function Register() {
     if (event.sub_categories && event.sub_categories.length > 0 && !subCategory) {
       return toast.error('Please select an event category/slot');
     }
-    
+
     // Size limit: 70KB
     const MAX_FILE_SIZE = 70 * 1024;
     const allowedImageTypes = ['image/jpeg', 'image/png', 'image/webp'];
@@ -99,9 +99,9 @@ export default function Register() {
 
     // Roster Validation
     if (event.requires_team_details) {
-      const isComplete = teamMembers.every(m => m.name.trim() !== '' && m.game_id.trim() !== '');
-      if (!isComplete) {
-        return toast.error('Please fill in all 5 Player Names and Game IDs.');
+      const first4Complete = teamMembers.slice(0, 4).every(m => m.name.trim() !== '' && m.game_id.trim() !== '');
+      if (!first4Complete) {
+        return toast.error('Please fill in the details for all 4 compulsory players.');
       }
     }
 
@@ -110,7 +110,7 @@ export default function Register() {
       // Generate descriptive file prefixes for S3 organization
       const safeEventTitle = (event?.title || 'event').replace(/[^a-zA-Z0-9]/g, '_').toLowerCase();
       const safeUserName = fullName.replace(/[^a-zA-Z0-9]/g, '_').toLowerCase() || 'student';
-      
+
       const paymentPrefix = `${safeEventTitle}_${safeUserName}_payment`;
       const idPrefix = `${safeEventTitle}_${safeUserName}_id`;
 
@@ -212,6 +212,8 @@ export default function Register() {
     );
   }
 
+  const totalAmount = event ? (event.requires_team_details ? event.entry_fee * 4 : event.entry_fee * teamSize) : 0;
+
   return (
     <main className="pt-32 pb-24 px-6 min-h-screen">
       <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-20 items-start">
@@ -221,7 +223,7 @@ export default function Register() {
           </h1>
           <p className="text-white/60 text-xl mb-12 leading-relaxed max-w-lg">
             Registration for <strong className="text-fest-primary">{event?.title}</strong> is almost complete. Entry fee is
-            {' '}₹{event?.entry_fee} per participant. Total Amount: <strong className="text-fest-primary">₹{(event?.entry_fee || 0) * teamSize}</strong>
+            {' '}₹{event?.entry_fee} per participant. Total Amount: <strong className="text-fest-primary">₹{totalAmount}</strong>
           </p>
 
           <div className="space-y-6 glass p-8 rounded-3xl border-l-4 border-fest-primary">
@@ -231,7 +233,7 @@ export default function Register() {
               {event?.payment_account_number && <li>Account Number: <strong className="text-fest-primary">{event.payment_account_number}</strong></li>}
               {event?.payment_ifsc && <li>IFSC: <strong className="text-fest-primary">{event.payment_ifsc}</strong></li>}
               {event?.payment_upi_id && <li>UPI ID: <strong className="text-fest-primary">{event.payment_upi_id}</strong></li>}
-              <li>Exact Amount for {teamSize} participants: <strong className="text-xl text-fest-primary">₹{(event?.entry_fee || 0) * teamSize}</strong></li>
+              <li>Exact Amount to pay: <strong className="text-xl text-fest-primary">₹{totalAmount}</strong></li>
               <li>Upload a clear screenshot of the successful payment.</li>
               <li>Upload a clear photo/scan of your <strong>Student ID Card</strong>.</li>
               <li>Maximum file size for each: <strong className="text-fest-primary">70KB</strong>.</li>
@@ -365,39 +367,43 @@ export default function Register() {
                   {teamMembers.map((member, idx) => (
                     <div key={idx} className="grid grid-cols-1 md:grid-cols-2 gap-4 items-end pb-6 border-b border-white/5 last:border-0 last:pb-0">
                       <div className="relative group">
-                         <div className="text-[10px] font-black text-white/20 uppercase tracking-[0.2em] mb-2">Player {idx + 1} Name</div>
-                         <input
-                           type="text"
-                           required
-                           value={member.name}
-                           onChange={(e) => {
-                             const newMembers = [...teamMembers];
-                             newMembers[idx].name = e.target.value;
-                             setTeamMembers(newMembers);
-                           }}
-                           className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-fest-primary transition-all"
-                           placeholder="Full Name"
-                         />
+                        <div className="text-[10px] font-black text-white/20 uppercase tracking-[0.2em] mb-2">
+                          Player {idx + 1} Name {idx === 4 ? '(Optional Sub)' : '(Compulsory)'}
+                        </div>
+                        <input
+                          type="text"
+                          required={idx < 4}
+                          value={member.name}
+                          onChange={(e) => {
+                            const newMembers = [...teamMembers];
+                            newMembers[idx].name = e.target.value;
+                            setTeamMembers(newMembers);
+                          }}
+                          className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-fest-primary transition-all"
+                          placeholder="Full Name"
+                        />
                       </div>
                       <div className="relative group">
-                         <div className="text-[10px] font-black text-white/20 uppercase tracking-[0.2em] mb-2">Game ID / In-Game Name</div>
-                         <input
-                           type="text"
-                           required
-                           value={member.game_id}
-                           onChange={(e) => {
-                             const newMembers = [...teamMembers];
-                             newMembers[idx].game_id = e.target.value;
-                             setTeamMembers(newMembers);
-                           }}
-                           className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-fest-primary transition-all"
-                           placeholder="ID (e.g. 512344566)"
-                         />
+                        <div className="text-[10px] font-black text-white/20 uppercase tracking-[0.2em] mb-2">
+                          Game ID / In-Game Name {idx === 4 ? '(Optional)' : ''}
+                        </div>
+                        <input
+                          type="text"
+                          required={idx < 4}
+                          value={member.game_id}
+                          onChange={(e) => {
+                            const newMembers = [...teamMembers];
+                            newMembers[idx].game_id = e.target.value;
+                            setTeamMembers(newMembers);
+                          }}
+                          className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-fest-primary transition-all"
+                          placeholder="ID (e.g. 512344566)"
+                        />
                       </div>
                     </div>
                   ))}
                 </div>
-                <p className="text-[10px] text-white/30 italic">Note: All 5 slots are mandatory for BGMI/Free Fire events.</p>
+                <p className="text-[10px] text-white/30 italic">Note: The first 4 players are compulsory. The 5th slot is an optional substitute player (free of charge).</p>
               </div>
             )}
 
@@ -491,10 +497,15 @@ export default function Register() {
             <div className="bg-fest-primary/10 border border-fest-primary/20 rounded-2xl p-6 flex items-center justify-between">
               <div className="space-y-1">
                 <div className="text-[10px] uppercase tracking-widest text-white/40 font-bold">Total Amount to Pay</div>
-                <div className="text-sm text-white/60">₹{event?.entry_fee} × {teamSize} participant{teamSize > 1 ? 's' : ''}</div>
+                <div className="text-sm text-white/60">
+                  {event?.requires_team_details
+                    ? `₹${event?.entry_fee} × 4 compulsory participants (5th is free sub)`
+                    : `₹${event?.entry_fee} × ${teamSize} participant${teamSize > 1 ? 's' : ''}`
+                  }
+                </div>
               </div>
               <div className="text-3xl font-display font-black text-fest-primary">
-                ₹{(event?.entry_fee || 0) * teamSize}
+                ₹{totalAmount}
               </div>
             </div>
 
