@@ -52,8 +52,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // --- Action: View (GET) ---
     if (action === 'view' && req.method === 'GET') {
-      // SECURITY FIX (C2): Require authentication for ALL file views
-      await verifyUserToken(req);
       const { key } = req.query;
 
       if (!key || typeof key !== 'string') {
@@ -63,6 +61,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       // SECURITY FIX (C2): Prevent path traversal attacks
       if (key.includes('..') || key.startsWith('/')) {
         return res.status(400).json({ error: 'Invalid object key' });
+      }
+
+      // Require auth for sensitive folders only
+      if (key.startsWith('evidence/') || key.startsWith('submissions/')) {
+        await verifyUserToken(req);
       }
 
       const command = new GetObjectCommand({
