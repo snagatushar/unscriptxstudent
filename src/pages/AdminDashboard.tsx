@@ -808,6 +808,7 @@ export default function AdminDashboard() {
         rules: rulesArray,
         is_active: true,
         sub_categories: newEvent.sub_categories,
+        requires_team_details: newEvent.requires_team_details,
         requires_video_submission: newEvent.requires_video_submission,
         verified_success_message: newEvent.verified_success_message.trim(),
       };
