@@ -260,8 +260,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     return res.status(400).json({ error: 'Invalid action' });
   } catch (error: any) {
-    // SECURITY FIX (H3): Don't leak internal error details to client
+    // TEMPORARY DEBUG: Show error details to diagnose Google login failure
     console.error('Auth Hub Error:', error);
-    return res.status(500).json({ error: 'An internal error occurred. Please try again.' });
+    return res.status(500).json({ error: error.message || 'Auth operation failed', debug_action: req.query.action || 'unknown' });
   }
 }
