@@ -22,6 +22,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   let decoded: any;
   try {
     decoded = jwt.verify(token, JWT_SECRET);
+    
+    // Always fetch the CURRENT role from the database instead of trusting the JWT role,
+    // because role changes (e.g. promoting a user to admin) don't update existing JWT tokens.
+    const userResult = await query('SELECT role FROM users WHERE id = $1', [decoded.id]);
+    if (userResult.rows.length === 0) {
+      return res.status(401).json({ error: 'User no longer exists' });
+    }
+    decoded.role = userResult.rows[0].role;
+    
     if (decoded.role !== 'admin' && decoded.role !== 'payment_reviewer' && decoded.role !== 'content_reviewer') {
       return res.status(403).json({ error: 'Permission denied. Admin, content_reviewer, or reviewer role required.' });
     }

@@ -15,8 +15,14 @@ export async function verifyUserToken(req: any) {
 
   try {
     const decoded: any = jwt.verify(token, JWT_SECRET);
+    
+    // Fetch the CURRENT role from the database instead of trusting the JWT snapshot,
+    // because role changes don't update existing JWT tokens.
+    const userResult = await query('SELECT role FROM users WHERE id = $1', [decoded.id]);
+    const currentRole = userResult.rows[0]?.role || decoded.role;
+    
     // Minimal user object to match expected shape
-    return { id: decoded.id, email: decoded.email, role: decoded.role };
+    return { id: decoded.id, email: decoded.email, role: currentRole };
   } catch (err) {
     throw new Error('Invalid token');
   }
