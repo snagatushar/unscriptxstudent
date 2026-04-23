@@ -18,10 +18,10 @@ const ABOUT_EVENT = {
  * Hardcoded "About the College" section.
  */
 const ABOUT_COLLEGE = {
-  title: 'A Legacy of ',
-  subtitle: 'Excellence',
-  body: 'Founded on the principles of innovation and integrity, our institution has been at the forefront of quality education for decades. We believe in nurturing raw talent and providing a dynamic environment where ideas flourish.',
-  image_url: 'https://picsum.photos/seed/college/800/400',
+  title: 'IFIM ',
+  subtitle: 'School of Technology, Bengaluru',
+  body: 'IFIM Institutions nurtures technically skilled, innovative, and industry-ready professionals with a strong foundation in computing, ethics, and research. The curriculum aligns with industry standards and emerging technologies, offering hands-on experience in software development, data science, artificial intelligence, cloud computing, cybersecurity, and web technologies. Through project-based learning, internships, and industry collaboration, students apply theory to real-world challenges and develop critical thinking, innovation, and lifelong learning skills.',
+  image_url: '/ifim college.webp',
   metadata: {
     highlight_one_value: 'A++',
     highlight_one_label: 'NAAC Grade',
@@ -45,12 +45,18 @@ const GENERAL_RULES = [
 ];
 
 /**
+ * Hardcoded School of Technology Members.
+ */
+const SCHOOL_OF_TECH_MEMBERS = [
+  { id: 1, name: 'Dr. Salur Srikant Patnaik', role: 'Dean of School of Technology, IFIM College', image_url: '/Srikanth.jpeg' },
+  { id: 2, name: 'Dr. Vishal', role: 'Head of the Department School of Technology, IFIM', image_url: '/vishalai.jpeg' },
+];
+
+/**
  * Hardcoded Organizing Committee.
  */
 const COMMITTEE_MEMBERS = [
-  { id: 1, name: 'Dr. Salur Srikant Patnaik', role: 'Dean of School of Technology, IFIM College', image_url: '/Srikanth.jpeg' },
-  { id: 2, name: 'Dr. Vishal', role: 'Head of the Department School of Technology, IFIM', image_url: '/vishalai.jpeg' },
-  { id: 3, name: 'Dr. Sunethra', role: 'Assistant Professor, IFIM College', image_url: '/sunethra.jpeg' },
+  { id: 1, name: 'Dr. Sunetra Chatterjee', role: 'Assistant Professor, IFIM College', eventrole: "⭐ Event Lead", image_url: '/sunethra.jpeg' },
 ];
 
 /**
@@ -238,8 +244,56 @@ export default function Home() {
         </div>
       </section>
 
+      {/* IFIM School of Technology Section */}
+      <section className="py-24 px-6 relative overflow-hidden">
+        <div className="max-w-7xl mx-auto text-center">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            className="mb-16"
+          >
+            <h2 className="text-fest-accent font-display font-bold uppercase tracking-widest mb-4">Leadership</h2>
+            <h3 className="text-4xl md:text-7xl font-display font-extrabold tracking-tighter">IFIM School of <span className="text-white italic">Technology</span></h3>
+          </motion.div>
+
+          <div className="flex flex-col md:flex-row items-center justify-center gap-12 md:gap-20">
+            {SCHOOL_OF_TECH_MEMBERS.map((member, i) => (
+              <motion.div
+                key={member.id}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.2 }}
+                viewport={{ once: true }}
+                className="group relative w-full max-w-sm"
+              >
+                <div className="relative mb-8 mx-auto w-48 h-48 md:w-64 md:h-64">
+                  <div className="absolute inset-0 bg-fest-primary/20 rounded-full blur-2xl group-hover:bg-fest-primary/40 transition-all duration-700 -z-10" />
+                  <div className="w-full h-full rounded-full border-4 border-white/10 p-2 group-hover:border-fest-primary/50 transition-all duration-700 relative z-10 overflow-hidden">
+                    <img
+                      src={member.image_url}
+                      alt={member.name}
+                      className="w-full h-full object-cover rounded-full transition-transform duration-700 group-hover:scale-110"
+                      referrerPolicy="no-referrer"
+                    />
+                  </div>
+                </div>
+
+                <h4 className="text-2xl md:text-3xl font-display font-extrabold text-white mb-2 group-hover:text-glow-primary transition-all duration-500">
+                  {member.name}
+                </h4>
+
+                <p className="text-fest-primary text-sm md:text-base uppercase tracking-[0.1em] font-medium leading-relaxed max-w-[250px] mx-auto">
+                  {member.role}
+                </p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Organizing Committee Section */}
-      <section className="py-24 px-6 relative overflow-hidden bg-white/5">
+      <section className="py-24 px-6 relative overflow-hidden">
         <div className="max-w-7xl mx-auto text-center">
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
@@ -251,39 +305,54 @@ export default function Home() {
             <h3 className="text-4xl md:text-7xl font-display font-extrabold tracking-tighter">Organizing <span className="text-white italic">Committee</span></h3>
           </motion.div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-12">
-            {COMMITTEE_MEMBERS.length > 0 ? (
-              COMMITTEE_MEMBERS.map((member, i) => (
-                <motion.div
-                  key={member.id}
-                  initial={{ opacity: 0, y: 30 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.1 }}
-                  viewport={{ once: true }}
-                  className="group"
-                >
-                  <div className="relative mb-6 mx-auto w-40 h-40 md:w-56 md:h-56">
-                    <div className="absolute inset-0 bg-fest-primary/20 rounded-full blur-2xl group-hover:bg-fest-primary/40 transition-all -z-10" />
-                    <div className="w-full h-full rounded-full border-2 border-white/10 p-2 group-hover:border-fest-primary/50 transition-all">
-                      <img
-                        src={member.image_url}
-                        alt={member.name}
-                        className="w-full h-full object-cover rounded-full transition-all duration-500"
-                        referrerPolicy="no-referrer"
-                      />
-                    </div>
-                  </div>
-                  <h4 className="text-xl md:text-2xl font-display font-bold text-white group-hover:text-fest-primary transition-colors">{member.name}</h4>
-                  <p className="text-white/40 text-xs md:text-sm uppercase tracking-[0.2em] font-bold mt-2">{member.role}</p>
-                </motion.div>
-              ))
-            ) : (
-              // No registrations via API yet
-              <div className="col-span-full py-16 text-center glass rounded-3xl border border-dashed border-white/5">
-                <p className="text-white/20 font-bold uppercase tracking-widest text-xs">No entries found</p>
+          {COMMITTEE_MEMBERS.length > 0 ? (
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="max-w-4xl mx-auto flex flex-col md:flex-row items-center justify-center gap-10 md:gap-16 relative group"
+            >
+              <div className="absolute top-0 right-0 w-64 h-64 bg-fest-primary/20 blur-[100px] -z-10 transition-all duration-700 group-hover:bg-fest-primary/30 group-hover:scale-150" />
+              <div className="absolute bottom-0 left-0 w-64 h-64 bg-fest-accent/20 blur-[100px] -z-10 transition-all duration-700 group-hover:bg-fest-accent/30 group-hover:scale-150" />
+
+              <div className="relative shrink-0 w-56 h-56 md:w-72 md:h-72">
+                <div className="absolute inset-0 bg-fest-primary/30 rounded-full blur-3xl group-hover:bg-fest-primary/50 transition-all duration-700 -z-10" />
+                <div className="w-full h-full rounded-full border-4 border-white/10 p-2 group-hover:border-fest-primary/50 transition-all duration-700 relative z-10 overflow-hidden">
+                  <div className="absolute inset-0 rounded-full border border-fest-primary/20 animate-[spin_10s_linear_infinite]" />
+                  <img
+                    src={COMMITTEE_MEMBERS[0].image_url}
+                    alt={COMMITTEE_MEMBERS[0].name}
+                    className="w-full h-full object-cover rounded-full transition-transform duration-700 group-hover:scale-110"
+                    referrerPolicy="no-referrer"
+                  />
+                </div>
               </div>
-            )}
-          </div>
+
+              <div className="text-center md:text-left flex-1 z-10">
+                <div className="inline-flex items-center justify-center md:justify-start gap-2 px-4 py-2 rounded-full glass border border-fest-primary/30 mb-6 group-hover:border-fest-primary/60 transition-colors">
+                  <Sparkles size={16} className="text-fest-primary" />
+                  <span className="text-fest-primary text-xs font-bold uppercase tracking-[0.2em]">
+                    {COMMITTEE_MEMBERS[0].eventrole?.replace('⭐', '').trim() || "Event Lead"}
+                  </span>
+                </div>
+
+                <h4 className="text-4xl md:text-6xl font-display font-extrabold text-white mb-4 group-hover:text-glow-primary transition-all duration-500">
+                  {COMMITTEE_MEMBERS[0].name}
+                </h4>
+
+                <p className="text-blue-400 text-lg md:text-xl uppercase tracking-[0.1em] font-medium leading-relaxed">
+                  {COMMITTEE_MEMBERS[0].role}
+                </p>
+
+
+                <div className="w-12 h-1 bg-gradient-to-r from-fest-primary to-fest-accent rounded-full mt-8 mx-auto md:mx-0 opacity-50 group-hover:opacity-100 group-hover:w-24 transition-all duration-500" />
+              </div>
+            </motion.div>
+          ) : (
+            <div className="max-w-4xl mx-auto py-16 text-center glass rounded-3xl border border-dashed border-white/5">
+              <p className="text-white/20 font-bold uppercase tracking-widest text-xs">No entries found</p>
+            </div>
+          )}
         </div>
       </section>
 

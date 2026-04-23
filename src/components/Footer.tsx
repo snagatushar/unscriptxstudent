@@ -1,6 +1,6 @@
 import { memo } from 'react';
 import { Link } from 'react-router-dom';
-import { Mail, Phone } from 'lucide-react';
+import { Mail, Phone, Download } from 'lucide-react';
 
 const Footer = () => {
   return (
@@ -20,7 +20,15 @@ const Footer = () => {
           <p className="text-white/50 max-w-md mb-8 leading-relaxed">
             The most anticipated college cultural fest is back. Join us for three days of creativity, talent, and pure energy. Break the script and own your moment.
           </p>
-
+          <a
+            href="/UnscripTX_Brochure.pdf"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold uppercase tracking-widest text-xs rounded-full transition-all group"
+          >
+            <Download size={16} className="text-fest-primary group-hover:-translate-y-1 transition-transform" />
+            Download Brochure
+          </a>
         </div>
 
         <div>

@@ -1,5 +1,5 @@
 import { motion } from 'motion/react';
-import { Sparkles, Target, Users } from 'lucide-react';
+import { Sparkles, Target, Users, Download } from 'lucide-react';
 
 /**
  * Static About page — all content is hardcoded (no Supabase egress).
@@ -22,8 +22,8 @@ const STORY = {
   title: 'The Story Behind The',
   subtitle: 'UNSCRIPTX',
   body: "Founded in 2026, UNSCRIPTX began as a small gathering of passionate students who wanted something different. They wanted a space where the unexpected was celebrated and where every voice could be heard.",
-  secondary_body: "Today, it has grown into one of the most anticipated events in the academic calendar, attracting thousands of participants from across the region.",
-  image_url: '/about-story.jpg', // Place your image in public/about-story.jpg
+  secondary_body: "",
+  image_url: "/about 1.jpeg",
 };
 
 export default function About() {
@@ -42,10 +42,27 @@ export default function About() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="text-white/50 text-lg max-w-2xl mx-auto"
+            className="text-white/50 text-lg max-w-2xl mx-auto mb-10"
           >
             {HERO.body}
           </motion.p>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="flex justify-center mt-8"
+          >
+            <a
+              href="/UnscripTX_Brochure.pdf"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-3 px-8 py-4 bg-fest-primary text-fest-dark font-black uppercase tracking-[0.2em] text-sm rounded-full hover:bg-fest-primary-light transition-all glow-primary hover:scale-105"
+            >
+              <Download size={20} />
+              Open Event Brochure
+            </a>
+          </motion.div>
         </header>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-24">
