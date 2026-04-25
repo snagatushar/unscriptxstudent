@@ -54,7 +54,7 @@ export default function About() {
             className="flex justify-center mt-8"
           >
             <a
-              href="/UnscripTX_Brochure.pdf"
+              href="/UnscripTX_Brochure_Updated.pdf"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-3 px-8 py-4 bg-fest-primary text-fest-dark font-black uppercase tracking-[0.2em] text-sm rounded-full hover:bg-fest-primary-light transition-all glow-primary hover:scale-105"

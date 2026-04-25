@@ -21,7 +21,7 @@ const Footer = () => {
             The most anticipated college cultural fest is back. Join us for three days of creativity, talent, and pure energy. Break the script and own your moment.
           </p>
           <a
-            href="/UnscripTX_Brochure.pdf"
+            href="/UnscripTX_Brochure_Updated.pdf"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 px-6 py-3 bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold uppercase tracking-widest text-xs rounded-full transition-all group"
