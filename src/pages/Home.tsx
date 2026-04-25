@@ -253,7 +253,7 @@ export default function Home() {
             viewport={{ once: true }}
             className="mb-16"
           >
-            <h2 className="text-fest-accent font-display font-bold uppercase tracking-widest mb-4">Leadership</h2>
+            {/* <h2 className="text-fest-accent font-display font-bold uppercase tracking-widest mb-4">Leadership</h2> */}
             <h3 className="text-4xl md:text-7xl font-display font-extrabold tracking-tighter">IFIM School of <span className="text-white italic">Technology</span></h3>
           </motion.div>
 
@@ -301,7 +301,7 @@ export default function Home() {
             viewport={{ once: true }}
             className="mb-16"
           >
-            <h2 className="text-fest-accent font-display font-bold uppercase tracking-widest mb-4">The Architects</h2>
+            {/* <h2 className="text-fest-accent font-display font-bold uppercase tracking-widest mb-4">The Architects</h2> */}
             <h3 className="text-4xl md:text-7xl font-display font-extrabold tracking-tighter">Organizing <span className="text-white italic">Committee</span></h3>
           </motion.div>
 

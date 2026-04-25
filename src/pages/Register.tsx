@@ -1,6 +1,6 @@
 import { motion } from 'motion/react';
 import { useState, FormEvent, useEffect } from 'react';
-import { CheckCircle2, Send, UploadCloud, Loader2, Users } from 'lucide-react';
+import { CheckCircle2, Send, UploadCloud, Loader2, Users, Copy } from 'lucide-react';
 import { useParams, Link } from 'react-router-dom';
 
 import { uploadToS3 } from '../lib/storage';
@@ -155,6 +155,10 @@ export default function Register() {
     }
   };
 
+  const copyToClipboard = (text: string, label: string) => {
+    navigator.clipboard.writeText(text);
+    toast.success(`${label} copied to clipboard!`);
+  };
 
   if (loadingConfig) {
     return (
@@ -229,10 +233,36 @@ export default function Register() {
           <div className="space-y-6 glass p-8 rounded-3xl border-l-4 border-fest-primary">
             <h3 className="font-display font-bold text-xl mb-4">Payment Instructions</h3>
             <ul className="space-y-4 text-white/80">
-              {event?.payment_account_name && <li>Account Name: <strong className="text-fest-primary">{event.payment_account_name}</strong></li>}
-              {event?.payment_account_number && <li>Account Number: <strong className="text-fest-primary">{event.payment_account_number}</strong></li>}
-              {event?.payment_ifsc && <li>IFSC: <strong className="text-fest-primary">{event.payment_ifsc}</strong></li>}
-              {event?.payment_upi_id && <li>UPI ID: <strong className="text-fest-primary">{event.payment_upi_id}</strong></li>}
+              <li className="flex items-center justify-between gap-4">
+                <span>Bank Name: <strong className="text-fest-primary">Axis Bank</strong></span>
+                <button type="button" onClick={() => copyToClipboard('Axis Bank', 'Bank Name')} className="p-2 bg-white/5 hover:bg-white/10 rounded-lg text-white/60 hover:text-white transition-colors" title="Copy Bank Name">
+                  <Copy size={16} />
+                </button>
+              </li>
+              <li className="flex items-center justify-between gap-4">
+                <span>Account Name: <strong className="text-fest-primary">IFIM College</strong></span>
+                <button type="button" onClick={() => copyToClipboard('IFIM College', 'Account Name')} className="p-2 bg-white/5 hover:bg-white/10 rounded-lg text-white/60 hover:text-white transition-colors" title="Copy Account Name">
+                  <Copy size={16} />
+                </button>
+              </li>
+              <li className="flex items-center justify-between gap-4">
+                <span>Account Number: <strong className="text-fest-primary">919010080093905</strong></span>
+                <button type="button" onClick={() => copyToClipboard('919010080093905', 'Account Number')} className="p-2 bg-white/5 hover:bg-white/10 rounded-lg text-white/60 hover:text-white transition-colors" title="Copy Account Number">
+                  <Copy size={16} />
+                </button>
+              </li>
+              <li className="flex items-center justify-between gap-4">
+                <span>Branch: <strong className="text-fest-primary">Electronic City</strong></span>
+                <button type="button" onClick={() => copyToClipboard('Electronic City', 'Branch')} className="p-2 bg-white/5 hover:bg-white/10 rounded-lg text-white/60 hover:text-white transition-colors" title="Copy Branch">
+                  <Copy size={16} />
+                </button>
+              </li>
+              <li className="flex items-center justify-between gap-4">
+                <span>IFSC Code: <strong className="text-fest-primary">UTIB0000677</strong></span>
+                <button type="button" onClick={() => copyToClipboard('UTIB0000677', 'IFSC Code')} className="p-2 bg-white/5 hover:bg-white/10 rounded-lg text-white/60 hover:text-white transition-colors" title="Copy IFSC Code">
+                  <Copy size={16} />
+                </button>
+              </li>
               <li>Exact Amount to pay: <strong className="text-xl text-fest-primary">₹{totalAmount}</strong></li>
               <li>Upload a clear screenshot of the successful payment.</li>
               <li>Upload a clear photo/scan of your <strong>Student ID Card</strong>.</li>
