@@ -103,6 +103,41 @@ export default function Login() {
     }
   };
 
+  const handleForgotPassword = async () => {
+    if (!email.trim()) {
+      toast.error('Enter your email address first, then click Forgot Password.');
+      return;
+    }
+    
+    const lastRequest = localStorage.getItem('lastResetRequest');
+    if (lastRequest) {
+      const timePassed = Date.now() - parseInt(lastRequest, 10);
+      const cooldown = 2 * 60 * 1000; // 2 minutes
+      if (timePassed < cooldown) {
+        const remainingSecs = Math.ceil((cooldown - timePassed) / 1000);
+        const mins = Math.floor(remainingSecs / 60);
+        const secs = remainingSecs % 60;
+        toast.error(`Please wait ${mins > 0 ? `${mins}m ` : ''}${secs}s before requesting again.`);
+        return;
+      }
+    }
+
+    try {
+      const response = await fetch('/api/auth-hub?action=reset-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email.trim() })
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data.error || 'Reset request failed');
+      
+      localStorage.setItem('lastResetRequest', Date.now().toString());
+      toast.success('Password reset link sent to your inbox!');
+    } catch (err: any) {
+      toast.error(err.message || 'Could not send reset email.');
+    }
+  };
+
   return (
     <main className="pt-32 pb-24 px-6 min-h-screen flex items-center justify-center relative overflow-hidden">
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-fest-primary/10 blur-[120px] -z-10" />
@@ -165,24 +200,7 @@ export default function Login() {
             <div className="text-right">
               <button 
                 type="button" 
-                onClick={async () => {
-                  if (!email.trim()) {
-                    toast.error('Enter your email address first, then click Forgot Password.');
-                    return;
-                  }
-                  try {
-                    const response = await fetch('/api/auth-hub?action=reset-password', {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({ email: email.trim() })
-                    });
-                    const data = await response.json().catch(() => ({}));
-                    if (!response.ok) throw new Error(data.error || 'Reset request failed');
-                    toast.success('Password reset link sent to your inbox!');
-                  } catch (err: any) {
-                    toast.error(err.message || 'Could not send reset email.');
-                  }
-                }}
+                onClick={handleForgotPassword}
                 className="text-xs text-white/40 hover:text-fest-primary transition-colors uppercase tracking-widest font-bold"
               >
                 Forgot Password?
