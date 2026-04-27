@@ -26,7 +26,9 @@ type AuditLogRow = {
   target_id: string;
   details: any;
   created_at: string;
-  actor_user: { full_name: string | null; email: string; role: string } | null;
+  actor_name: string | null;
+  actor_email: string | null;
+  actor_role: string | null;
 };
 
 type AppUser = {
@@ -3661,7 +3663,7 @@ export default function AdminDashboard() {
                              </span>
                           </div>
                           <div className="mt-2 text-lg font-bold tracking-tight">
-                             {log.actor_user?.full_name || 'System Admin'} 
+                             {log.actor_name || log.actor_email || 'System Admin'} 
                              <span className="text-white/40 font-normal ml-2">
                                {log.action_type.includes('PAYMENT') ? 'processed payment for' : 
                                 log.action_type.includes('JUDGE') ? 'evaluated' : 
