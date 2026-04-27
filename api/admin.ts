@@ -125,6 +125,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     if (req.method === 'POST') {
+      // Handle update_role before table validation since it doesn't use the generic table parameter
+      if (action === 'update_role') {
+         if (decoded.role !== 'admin') return res.status(403).json({ error: 'Only admins can change roles.' });
+         const { email, role } = req.body;
+         const VALID_ROLES = ['user', 'judge', 'payment_reviewer', 'content_reviewer', 'admin'];
+         if (!VALID_ROLES.includes(role)) {
+            return res.status(400).json({ error: 'Invalid role value' });
+         }
+         await query(`UPDATE users SET role = $1 WHERE email = $2`, [role, email]);
+         return res.status(200).json({ success: true });
+      }
+
       const safeTable = validateTable(table);
 
       // RBAC check for modifications
@@ -238,16 +250,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
          }
       }
 
-      if (action === 'update_role') {
-         if (decoded.role !== 'admin') return res.status(403).json({ error: 'Only admins can change roles.' });
-         const { email, role } = req.body;
-         const VALID_ROLES = ['user', 'judge', 'payment_reviewer', 'content_reviewer', 'admin'];
-         if (!VALID_ROLES.includes(role)) {
-            return res.status(400).json({ error: 'Invalid role value' });
-         }
-         await query(`UPDATE users SET role = $1 WHERE email = $2`, [role, email]);
-         return res.status(200).json({ success: true });
-      }
+
     }
     return res.status(400).json({ error: 'Invalid request' });
   } catch (err: any) {
