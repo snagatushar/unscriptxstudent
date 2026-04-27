@@ -907,10 +907,16 @@ export default function AdminDashboard() {
 
   const handleRoleChange = async (userId: string, role: AppRole) => {
     try {
-      await api.post('/api/admin', { action: 'update', table: 'users', id: userId, record: { role } });
+      const targetUser = users.find(u => u.id === userId);
+      if (!targetUser) {
+        toast.error('User not found.');
+        return;
+      }
+      await api.post('/api/admin', { action: 'update_role', email: targetUser.email, role });
       toast.success('Role updated.');
       
-      const targetUser = users.find(u => u.id === userId);
+      
+
       await logAdminAction(user?.id || '', 'ROLE_UPDATE', userId, {
         new_role: role,
         email: targetUser?.email,
