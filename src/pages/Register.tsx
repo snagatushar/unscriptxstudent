@@ -318,11 +318,11 @@ export default function Register() {
                   value={collegeName}
                   onChange={(e) => setCollegeName(e.target.value)}
                   className="w-full bg-transparent border-b-2 border-white/10 py-3 focus:outline-none focus:border-fest-primary transition-colors peer placeholder-transparent"
-                  placeholder="College"
+                  placeholder="School/College Name"
                   id="college"
                 />
                 <label htmlFor="college" className="absolute left-0 top-3 text-white/30 text-sm transition-all peer-focus:-top-4 peer-focus:text-fest-primary peer-focus:text-xs peer-[:not(:placeholder-shown)]:-top-4 peer-[:not(:placeholder-shown)]:text-xs">
-                  College Name
+                  School/College Name
                 </label>
               </div>
             </div>

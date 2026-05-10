@@ -53,7 +53,7 @@ export default function About() {
             transition={{ delay: 0.2 }}
             className="flex justify-center mt-8"
           >
-            <a
+            {/* <a
               href="/UnscripTX_Brochure_Updated.pdf"
               target="_blank"
               rel="noopener noreferrer"
@@ -61,7 +61,7 @@ export default function About() {
             >
               <Download size={20} />
               Open Event Brochure
-            </a>
+            </a> */}
           </motion.div>
         </header>
 

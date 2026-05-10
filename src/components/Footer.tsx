@@ -20,7 +20,7 @@ const Footer = () => {
           <p className="text-white/50 max-w-md mb-8 leading-relaxed">
             The most anticipated college cultural fest is back. Join us for three days of creativity, talent, and pure energy. Break the script and own your moment.
           </p>
-          <a
+          {/* <a
             href="/UnscripTX_Brochure_Updated.pdf"
             target="_blank"
             rel="noopener noreferrer"
@@ -28,7 +28,7 @@ const Footer = () => {
           >
             <Download size={16} className="text-fest-primary group-hover:-translate-y-1 transition-transform" />
             Download Brochure
-          </a>
+          </a> */}
         </div>
 
         <div>
