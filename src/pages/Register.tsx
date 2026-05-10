@@ -73,19 +73,19 @@ export default function Register() {
       return toast.error('Please select an event category/slot');
     }
 
-    // Size limit: 70KB
-    const MAX_FILE_SIZE = 70 * 1024;
+    // Size limit: 100KB
+    const MAX_FILE_SIZE = 100 * 1024;
     const allowedImageTypes = ['image/jpeg', 'image/png', 'image/webp'];
 
     if (paymentFile.size > MAX_FILE_SIZE) {
-      return toast.error('Payment screenshot must be under 70KB. Please compress the image.');
+      return toast.error('Payment screenshot must be under 100KB. Please compress the image.');
     }
     if (!allowedImageTypes.includes(paymentFile.type)) {
       return toast.error('Only JPG, PNG, or WebP images are allowed for payment proof.');
     }
 
     if (idCardFile.size > MAX_FILE_SIZE) {
-      return toast.error('ID Card must be under 70KB. Please compress the image.');
+      return toast.error('ID Card must be under 100KB. Please compress the image.');
     }
     if (!allowedImageTypes.includes(idCardFile.type)) {
       return toast.error('Only JPG, PNG, or WebP images are allowed for ID Card.');
@@ -266,7 +266,7 @@ export default function Register() {
               <li>Exact Amount to pay: <strong className="text-xl text-fest-primary">₹{totalAmount}</strong></li>
               <li>Upload a clear screenshot of the successful payment.</li>
               <li>Upload a clear photo/scan of your <strong>Student ID Card</strong>.</li>
-              <li>Maximum file size for each: <strong className="text-fest-primary">70KB</strong>.</li>
+              <li>Maximum file size for each: <strong className="text-fest-primary">100KB</strong>.</li>
             </ul>
           </div>
         </motion.div>
@@ -496,7 +496,7 @@ export default function Register() {
                 </div>
                 <div className="text-center md:text-left flex-1">
                   <h4 className="text-sm font-bold uppercase tracking-widest text-white mb-1">1. Payment Proof</h4>
-                  <p className="text-xs text-white/50">{paymentFile ? paymentFile.name : 'Upload Screenshot / Max 70KB (.jpg, .png)'}</p>
+                  <p className="text-xs text-white/50">{paymentFile ? paymentFile.name : 'Upload Screenshot / Max 100KB (.jpg, .png)'}</p>
                 </div>
                 {paymentFile && <CheckCircle2 className="text-green-500 hidden md:block" size={24} />}
               </div>
@@ -517,7 +517,7 @@ export default function Register() {
                 </div>
                 <div className="text-center md:text-left flex-1">
                   <h4 className="text-sm font-bold uppercase tracking-widest text-white mb-1">2. Student ID Card</h4>
-                  <p className="text-xs text-white/50">{idCardFile ? idCardFile.name : 'Upload ID Photo / Max 70KB (.jpg, .png)'}</p>
+                  <p className="text-xs text-white/50">{idCardFile ? idCardFile.name : 'Upload ID Photo / Max 100KB (.jpg, .png)'}</p>
                 </div>
                 {idCardFile && <CheckCircle2 className="text-green-500 hidden md:block" size={24} />}
               </div>
