@@ -85,8 +85,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         return res.status(400).json({ error: 'Missing required registration parameters' });
       }
 
-      // Auto-approve if specific referral code is provided
-      const initialStatus = referral_code === 'ifim_unscripTx_2026' ? 'approved' : 'pending';
+      // Require specific referral code for registration
+      if (referral_code !== process.env.REGISTRATION_REFERRAL_CODE) {
+        return res.status(400).json({ error: 'Invalid or missing referral code. Please use a valid code to register.' });
+      }
+      const initialStatus = 'approved';
 
       const result = await query(
         `INSERT INTO registrations (

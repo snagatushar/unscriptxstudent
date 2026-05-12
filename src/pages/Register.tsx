@@ -54,6 +54,8 @@ export default function Register() {
     if (!user) return toast.error('You must be logged in to register');
     if (!event) return toast.error('Event not found');
     if (!applicationFormNo) return toast.error('Please enter your Application Form Number');
+    if (!referralCode) return toast.error('Please enter the Referral Code');
+    if (referralCode !== import.meta.env.VITE_REGISTRATION_REFERRAL_CODE) return toast.error('Incorrect Referral Code');
     if (!userPhotoFile) return toast.error('Please upload your photo');
     
     if (event.sub_categories && event.sub_categories.length > 0 && !subCategory) {
@@ -295,14 +297,15 @@ export default function Register() {
               <div className="relative group">
                 <input
                   type="text"
+                  required
                   value={referralCode}
                   onChange={(e) => setReferralCode(e.target.value)}
                   className="w-full bg-transparent border-b-2 border-white/10 py-3 focus:outline-none focus:border-fest-primary transition-colors peer placeholder-transparent"
-                  placeholder="Referral Code (e.g. ifim_unscripTx_2026)"
+                  placeholder="Referral Code (Required)"
                   id="referral-code"
                 />
                 <label htmlFor="referral-code" className="absolute left-0 top-3 text-white/30 text-sm transition-all peer-focus:-top-4 peer-focus:text-fest-primary peer-focus:text-xs peer-[:not(:placeholder-shown)]:-top-4 peer-[:not(:placeholder-shown)]:text-xs">
-                  Referral Code (for instant approval)
+                  Referral Code (Required)
                 </label>
               </div>
             </div>
