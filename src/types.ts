@@ -45,22 +45,29 @@ export interface DatabaseEvent {
   requires_team_details?: boolean;
   requires_video_submission?: boolean;
   verified_success_message?: string;
+  drive_folder_id?: string | null;
+  drive_embed_hint?: string | null;
+  created_at?: string;
+  updated_at?: string;
 }
-
-
 
 export interface CommitteeMember {
   id: string;
   name: string;
   role: string;
+  eventrole?: string | null;
   image_url: string;
   display_order: number;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface GeneralRule {
   id: string;
   rule_text: string;
   display_order: number;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface HeroSlide {

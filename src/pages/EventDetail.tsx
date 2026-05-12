@@ -5,6 +5,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useEffect, useState } from 'react';
 import { api } from '../lib/api';
 import { DatabaseEvent, QualificationStage } from '../types';
+import { HARDCODED_EVENTS } from '../hooks/useAwsData';
 
 type PublicEventResult = {
   participant_name: string;
@@ -22,32 +23,22 @@ export default function EventDetail() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function fetchEvent() {
-      if (!id) return;
-
-      try {
-        const eventData = await api.get<any>(`/api/public?resource=events&id=${id}`, false);
-        
-        setEvent({
-          ...eventData,
-          entry_fee: Number(eventData.entry_fee || 0),
-          rules: eventData.rules || [],
-        });
-
-        try {
-          const resultData = await api.get<PublicEventResult[]>(`/api/public?resource=event_results&target_event_id=${id}`, false);
-          setResults(resultData || []);
-        } catch (e) {
-          console.warn('Results not available');
-        }
-      } catch (err) {
-        console.error('Failed to fetch event details', err);
-      } finally {
-        setLoading(false);
-      }
+    if (!id) return;
+    
+    // Find event instantly from hardcoded data instead of API call
+    const foundEvent = HARDCODED_EVENTS.find((e) => e.id === id);
+    
+    if (foundEvent) {
+      setEvent({
+        ...foundEvent,
+        entry_fee: Number(foundEvent.entry_fee || 0),
+        rules: foundEvent.rules || [],
+      });
     }
-
-    fetchEvent();
+    
+    // Results are empty for now since this is the fresh student db
+    setResults([]);
+    setLoading(false);
   }, [id]);
 
   if (loading) {
@@ -93,10 +84,8 @@ export default function EventDetail() {
                 <img
                   src={event.image_url}
                   alt={event.title}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover object-center"
                   referrerPolicy="no-referrer"
-                  loading="lazy"
-                  decoding="async"
                 />
               ) : (
                 <div className="w-full h-full bg-gradient-to-br from-fest-primary/20 via-fest-accent/10 to-fest-primary-dark/20 flex items-center justify-center">

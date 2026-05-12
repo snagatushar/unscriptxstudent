@@ -116,7 +116,7 @@ export default function Home() {
           >
             <div className="w-full aspect-video rounded-[2rem] overflow-hidden border-4 border-white/10 relative">
               <div className="absolute inset-0 bg-fest-primary/20 mix-blend-overlay"></div>
-              <img src={ABOUT_COLLEGE.image_url} alt="College Campus" className="w-full h-full object-cover" loading="lazy" decoding="async" />
+              <img src={ABOUT_COLLEGE.image_url} alt="College Campus" className="w-full h-full object-cover" />
             </div>
           </motion.div>
 
@@ -398,8 +398,6 @@ export default function Home() {
                 alt="Fest Crowd"
                 className="rounded-full w-full aspect-square object-cover border-8 border-white/5"
                 referrerPolicy="no-referrer"
-                loading="lazy"
-                decoding="async"
               />
             </div>
           </div>

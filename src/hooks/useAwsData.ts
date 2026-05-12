@@ -1,122 +1,820 @@
-import { useState, useEffect, useRef } from 'react';
-import { api } from '../lib/api';
-import { DatabaseEvent, CommitteeMember, GeneralRule, SiteContent } from '../types';
+import { useState, useEffect } from 'react';
+import { DatabaseEvent, CommitteeMember, GeneralRule } from '../types';
 
-// ─── Global in-memory cache with TTL ─────────────────────────────────
-const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+// ─── HARDCODED DATA PULLED FROM DATABASE ────────────────────────────
 
-type CacheEntry<T> = {
-  data: T;
-  fetchedAt: number;
-};
+export const HARDCODED_EVENTS: DatabaseEvent[] = [
+  {
+    "id": "cdd0b194-a85f-4a8d-ab6f-8e2bfefdc5e2",
+    "title": "MUSIC",
+    "slug": "music",
+    "category": "MUSIC",
+    "description": "MUSIC",
+    "rules": [
+      "Participation: Solo / Group (max 5 members)",
+      "Time Limit: 3–5 min (solo), 5–7 min (group)",
+      "Karaoke allowed only for non-classical categories",
+      "Participants must bring their own instruments",
+      "Use of vulgar or inappropriate lyrics will lead to disqualification"
+    ],
+    "image_url": "/events/1776454278386-music.webp",
+    "entry_fee": 100,
+    "max_team_size": 5,
+    "payment_account_name": "",
+    "payment_account_number": "",
+    "payment_ifsc": "",
+    "payment_upi_id": "",
+    "drive_folder_id": null,
+    "drive_embed_hint": null,
+    "is_active": true,
+    "created_at": "2026-04-17T19:32:19.348Z",
+    "updated_at": "2026-04-17T19:32:19.348Z",
+    "sub_categories": [
+      "Classical (Hindustani / Carnatic)",
+      "Western / Contemporary",
+      "Bollywood / Folk",
+      "Rap / Beatboxing",
+      "Instrumental"
+    ],
+    "requires_team_details": false,
+    "requires_video_submission": true,
+    "verified_success_message": "",
+    "participants_count": 0
+  },
+  {
+    "id": "309d75f9-6eee-4851-9278-ca165a24019f",
+    "title": "DANCE",
+    "slug": "dance",
+    "category": "DANCE",
+    "description": "Dance",
+    "rules": [
+      "Participation: Solo / Group (max 5 members)",
+      "Time Limit: 3–6 minutes",
+      "Music must be submitted 24–48 hours prior (MP3 format)",
+      "Props allowed only with prior approval",
+      "Vulgar movements or gestures are strictly prohibited"
+    ],
+    "image_url": "/events/1776454902473-dance 2.webp",
+    "entry_fee": 100,
+    "max_team_size": 5,
+    "payment_account_name": "",
+    "payment_account_number": "",
+    "payment_ifsc": "",
+    "payment_upi_id": "",
+    "drive_folder_id": null,
+    "drive_embed_hint": null,
+    "is_active": true,
+    "created_at": "2026-04-17T19:42:50.437Z",
+    "updated_at": "2026-04-17T19:42:50.437Z",
+    "sub_categories": [
+      "Classical (Bharatanatyam, Kathak, etc.)",
+      "Western (Hip-hop, Contemporary, Jazz)",
+      "Bollywood",
+      "Folk",
+      "Freestyle"
+    ],
+    "requires_team_details": false,
+    "requires_video_submission": true,
+    "verified_success_message": "",
+    "participants_count": 0
+  },
+  {
+    "id": "8f50ed5c-70a6-442e-b0d7-705816f753b2",
+    "title": "DRAMATICS & EXPRESSION",
+    "slug": "dramatics-expression",
+    "category": "DRAMA",
+    "description": "DRAMA",
+    "rules": [
+      "Participation: Individual",
+      "Time Limit: 2–5 minutes",
+      "Language: Hindi / English / Regional",
+      "Content must be original and meaningful",
+      "Offensive, political, or abusive content is strictly prohibited",
+      "Qualifications will be held online, and finals will be conducted offline ."
+    ],
+    "image_url": "/events/1776455112953-dramatic expressions.webp",
+    "entry_fee": 100,
+    "max_team_size": 1,
+    "payment_account_name": "",
+    "payment_account_number": "",
+    "payment_ifsc": "",
+    "payment_upi_id": "",
+    "drive_folder_id": null,
+    "drive_embed_hint": null,
+    "is_active": true,
+    "created_at": "2026-04-17T19:45:58.142Z",
+    "updated_at": "2026-04-17T19:45:58.142Z",
+    "sub_categories": [
+      "Acting / monologue",
+      "Stand-up comedy",
+      "Mimicry",
+      "Poetry / story-telling"
+    ],
+    "requires_team_details": false,
+    "requires_video_submission": true,
+    "verified_success_message": "",
+    "participants_count": 0
+  },
+  {
+    "id": "10a8d0ff-630f-472d-8263-2322d453cb98",
+    "title": "FINE ARTS",
+    "slug": "fine-arts",
+    "category": "ART",
+    "description": "ART",
+    "rules": [
+      "Participation: Individual",
+      "Time Limit: 60–90 minutes",
+      "Theme: On-spot / Pre-declared",
+      "Participants must bring their own materials",
+      "Tracing or copying is not allowed",
+      "Qualifications will be held online, and finals will be conducted offline"
+    ],
+    "image_url": "/events/1776516157063-ChatGPT Image Apr 18_ 2026_ 06_10_51 PM.webp",
+    "entry_fee": 100,
+    "max_team_size": 1,
+    "payment_account_name": "",
+    "payment_account_number": "",
+    "payment_ifsc": "",
+    "payment_upi_id": "",
+    "drive_folder_id": null,
+    "drive_embed_hint": null,
+    "is_active": true,
+    "created_at": "2026-04-17T19:47:06.128Z",
+    "updated_at": "2026-04-17T19:47:06.128Z",
+    "sub_categories": [
+      "Sketching / Painting",
+      "Digital Art",
+      "Craft / DIY"
+    ],
+    "requires_team_details": false,
+    "requires_video_submission": true,
+    "verified_success_message": "",
+    "participants_count": 0
+  },
+  {
+    "id": "38c421a5-5e5d-4bfc-999c-05413e287e71",
+    "title": "CONTENT CREATION",
+    "slug": "content-creation",
+    "category": "Content",
+    "description": "CONTENT CREATION",
+    "rules": [
+      "Participation: Individual / Team (max 3)",
+      "Duration: 30 seconds – 5 minutes",
+      "Content must be original",
+      "Plagiarism will lead to disqualification",
+      "Qualifications will be held online, and finals will be conducted offline ."
+    ],
+    "image_url": "/events/1776455383219-content creation 2.webp",
+    "entry_fee": 100,
+    "max_team_size": 3,
+    "payment_account_name": "",
+    "payment_account_number": "",
+    "payment_ifsc": "",
+    "payment_upi_id": "",
+    "drive_folder_id": null,
+    "drive_embed_hint": null,
+    "is_active": true,
+    "created_at": "2026-04-17T19:50:19.131Z",
+    "updated_at": "2026-04-17T19:50:19.131Z",
+    "sub_categories": [
+      "Reel / Short Video",
+      "Cinematic Edit",
+      "Short Film"
+    ],
+    "requires_team_details": false,
+    "requires_video_submission": true,
+    "verified_success_message": "",
+    "participants_count": 0
+  },
+  {
+    "id": "961a484c-ee05-4129-bf15-862568192118",
+    "title": "VISUAL ARTS",
+    "slug": "visual-arts",
+    "category": "ART",
+    "description": "VISUAL ARTS",
+    "rules": [
+      "Participation: Individual / Team (max 3)",
+      "Duration: 30 seconds – 5 minutes",
+      "Content must be original",
+      "Plagiarism will lead to disqualification",
+      "The event will be conducted offline."
+    ],
+    "image_url": "/events/1776455476810-visual arts.webp",
+    "entry_fee": 100,
+    "max_team_size": 3,
+    "payment_account_name": "",
+    "payment_account_number": "",
+    "payment_ifsc": "",
+    "payment_upi_id": "",
+    "drive_folder_id": null,
+    "drive_embed_hint": null,
+    "is_active": true,
+    "created_at": "2026-04-17T19:52:00.261Z",
+    "updated_at": "2026-04-17T19:52:00.261Z",
+    "sub_categories": [
+      "Photography",
+      "Photo Story / Concept Shoot"
+    ],
+    "requires_team_details": false,
+    "requires_video_submission": false,
+    "verified_success_message": "✅ Payment Confirmation\n\nYour payment has been successfully verified.\n\n📍 Event Location: IFIM College\n🕙 Time: 10:00 AM\n📅 Date: 25 May 2026",
+    "participants_count": 0
+  },
+  {
+    "id": "573addab-77d7-4d47-b5d8-a40170e5045d",
+    "title": "CODING CREATIVITY",
+    "slug": "coding-creativity",
+    "category": "TECH",
+    "description": "CODING CREATIVITY",
+    "rules": [
+      "Participation: Individual / Team (max 3)",
+      "Live demo or working model must be presented",
+      "Time Limit: 5–10 minutes",
+      "Internet usage rules will be specified",
+      "Qualifications will be held online, and finals will be conducted offline ."
+    ],
+    "image_url": "/events/1776455573812-coding 3.webp",
+    "entry_fee": 100,
+    "max_team_size": 3,
+    "payment_account_name": "",
+    "payment_account_number": "",
+    "payment_ifsc": "",
+    "payment_upi_id": "",
+    "drive_folder_id": null,
+    "drive_embed_hint": null,
+    "is_active": true,
+    "created_at": "2026-04-17T19:53:33.583Z",
+    "updated_at": "2026-04-17T19:53:33.583Z",
+    "sub_categories": [
+      "Mini project demo",
+      "Creative coding"
+    ],
+    "requires_team_details": false,
+    "requires_video_submission": true,
+    "verified_success_message": "",
+    "participants_count": 0
+  },
+  {
+    "id": "ca6103c5-4388-4c8a-9cb7-61b05b65bc75",
+    "title": "INNOVATION PITCH",
+    "slug": "innovation-pitch",
+    "category": "TECH",
+    "description": "TECH",
+    "rules": [
+      "Participation: Individual / Team(max 3)",
+      "Time Limit: 5 minutes pitch + 2 minutes Q&A",
+      "The idea must clearly include: Problem, Solution, and Feasibility",
+      "The concept must be original (no copied ideas)",
+      "Presentation should be clear, concise, and impactful",
+      "Exceeding the time limit may affect evaluation",
+      "The event will be conducted offline."
+    ],
+    "image_url": "/events/1776455833756-innovation tech 2.webp",
+    "entry_fee": 100,
+    "max_team_size": 3,
+    "payment_account_name": "",
+    "payment_account_number": "",
+    "payment_ifsc": "",
+    "payment_upi_id": "",
+    "drive_folder_id": null,
+    "drive_embed_hint": null,
+    "is_active": true,
+    "created_at": "2026-04-17T19:57:57.972Z",
+    "updated_at": "2026-04-17T19:57:57.972Z",
+    "sub_categories": [
+      "Startup idea",
+      "Problem-solving concept"
+    ],
+    "requires_team_details": false,
+    "requires_video_submission": false,
+    "verified_success_message": "✅ Payment Confirmation\n\nYour payment has been successfully verified.\n\n📍 Event Location: IFIM College\n🕙 Time: 10:00 AM\n📅 Date: 25 May 2026",
+    "participants_count": 0
+  },
+  {
+    "id": "a2ac509d-a72c-44f6-ac31-09c007c926a0",
+    "title": "ARTISTRY IN MOTION",
+    "slug": "artistry-in-motion",
+    "category": "ART",
+    "description": "ARTISTRY IN MOTION",
+    "rules": [
+      "Participation: Team of 2",
+      "One participant draws while the other guesses",
+      "Time: 2 minutes per round",
+      "Communication only through drawing",
+      "Use of words, symbols, sounds, or gestures is prohibited",
+      "The event will be conducted offline."
+    ],
+    "image_url": "/events/1776507536089-artistary in motion.webp",
+    "entry_fee": 100,
+    "max_team_size": 2,
+    "payment_account_name": "",
+    "payment_account_number": "",
+    "payment_ifsc": "",
+    "payment_upi_id": "",
+    "drive_folder_id": null,
+    "drive_embed_hint": null,
+    "is_active": true,
+    "created_at": "2026-04-18T10:20:21.447Z",
+    "updated_at": "2026-04-18T10:20:21.447Z",
+    "sub_categories": [],
+    "requires_team_details": false,
+    "requires_video_submission": false,
+    "verified_success_message": "✅ Payment Confirmation\n\nYour payment has been successfully verified.\n\n📍 Event Location: IFIM College\n🕙 Time: 10:00 AM\n📅 Date: 25 May 2026",
+    "participants_count": 0
+  },
+  {
+    "id": "dedf17c6-1f67-4ee7-86af-73745193aaab",
+    "title": "IDE-A-THON",
+    "slug": "ide-a-thon",
+    "category": "TECH",
+    "description": "IDE-A-THON",
+    "rules": [
+      "Participation: Team of 4",
+      "Unique idea required",
+      "No mobile usage during ideation",
+      "Participants must report 15 minutes before the event",
+      "Plagiarism or copying will lead to disqualification",
+      "Judges’ decision will be final",
+      "The event will be conducted offline."
+    ],
+    "image_url": "/events/1776507804141-ideathon.webp",
+    "entry_fee": 100,
+    "max_team_size": 4,
+    "payment_account_name": "",
+    "payment_account_number": "",
+    "payment_ifsc": "",
+    "payment_upi_id": "",
+    "drive_folder_id": null,
+    "drive_embed_hint": null,
+    "is_active": true,
+    "created_at": "2026-04-18T10:23:47.374Z",
+    "updated_at": "2026-04-18T10:23:47.374Z",
+    "sub_categories": [],
+    "requires_team_details": false,
+    "requires_video_submission": false,
+    "verified_success_message": "✅ Payment Confirmation\n\nYour payment has been successfully verified.\n\n📍 Event Location: IFIM College\n🕙 Time: 10:00 AM\n📅 Date: 25 May 2026",
+    "participants_count": 0
+  },
+  {
+    "id": "95e36443-ff9a-428c-bfef-96198d22d81d",
+    "title": "TRASH TO TREASURE",
+    "slug": "trash-to-treasure",
+    "category": "ART",
+    "description": "TRASH TO TREASURE",
+    "rules": [
+      "Participation: Team (max 3 members)",
+      "Time Limit: 60 minutes",
+      "Participants must use only waste or recyclable materials",
+      "All materials must be brought by participants",
+      "The final product should be creative and useful",
+      "Use of ready-made or pre-assembled items is not allowed",
+      "The event will be conducted offline."
+    ],
+    "image_url": "/events/1776507951367-trash to treasure.webp",
+    "entry_fee": 100,
+    "max_team_size": 3,
+    "payment_account_name": "",
+    "payment_account_number": "",
+    "payment_ifsc": "",
+    "payment_upi_id": "",
+    "drive_folder_id": null,
+    "drive_embed_hint": null,
+    "is_active": true,
+    "created_at": "2026-04-18T10:28:09.693Z",
+    "updated_at": "2026-04-18T10:28:09.693Z",
+    "sub_categories": [],
+    "requires_team_details": false,
+    "requires_video_submission": false,
+    "verified_success_message": "✅ Payment Confirmation\n\nYour payment has been successfully verified.\n\n📍 Event Location: IFIM College\n🕙 Time: 10:00 AM\n📅 Date: 25 May 2026",
+    "participants_count": 0
+  },
+  {
+    "id": "dd512b6c-bab7-4dc0-b34a-460407425c29",
+    "title": "ORIGAMI",
+    "slug": "origami",
+    "category": "ART",
+    "description": "ORIGAMI",
+    "rules": [
+      "Participation: Individual / Team (2 members)",
+      "Time Limit: 45–60 minutes",
+      "Only paper is allowed for creating models",
+      "Participants must bring their own materials",
+      "Designs must be original (no copying)",
+      "Use of additional materials (glue, scissors, etc.) is not allowed",
+      "Qualifications will be held online, and finals will be conducted offline ."
+    ],
+    "image_url": "/events/1776510142745-origami.webp",
+    "entry_fee": 100,
+    "max_team_size": 2,
+    "payment_account_name": "",
+    "payment_account_number": "",
+    "payment_ifsc": "",
+    "payment_upi_id": "",
+    "drive_folder_id": null,
+    "drive_embed_hint": null,
+    "is_active": true,
+    "created_at": "2026-04-18T11:03:08.115Z",
+    "updated_at": "2026-04-18T11:03:08.115Z",
+    "sub_categories": [],
+    "requires_team_details": false,
+    "requires_video_submission": true,
+    "verified_success_message": "",
+    "participants_count": 0
+  },
+  {
+    "id": "49e1713e-86db-4257-beb3-f6f821dbf6ed",
+    "title": "BEST MANAGER",
+    "slug": "best-manager",
+    "category": "TECH",
+    "description": "BEST MANAGER",
+    "rules": [
+      "Participation: Individual",
+      "Multiple rounds will be conducted",
+      "Formal attire is recommended",
+      "Participants will be judged on professionalism, leadership, and creativity",
+      "Use of derogatory language will lead to disqualification",
+      "The event will be conducted offline."
+    ],
+    "image_url": "/events/1776510311565-best manger 2.webp",
+    "entry_fee": 100,
+    "max_team_size": 1,
+    "payment_account_name": "",
+    "payment_account_number": "",
+    "payment_ifsc": "",
+    "payment_upi_id": "",
+    "drive_folder_id": null,
+    "drive_embed_hint": null,
+    "is_active": true,
+    "created_at": "2026-04-18T11:05:48.844Z",
+    "updated_at": "2026-04-18T11:05:48.844Z",
+    "sub_categories": [],
+    "requires_team_details": false,
+    "requires_video_submission": false,
+    "verified_success_message": "✅ Payment Confirmation\n\nYour payment has been successfully verified.\n\n📍 Event Location: IFIM College\n🕙 Time: 10:00 AM\n📅 Date: 25 May 2026",
+    "participants_count": 0
+  },
+  {
+    "id": "b9bff52e-83aa-4476-9145-bb4c8e3f8b49",
+    "title": "SPEED SKETCHING / PAINTING",
+    "slug": "speed-sketching-painting",
+    "category": "ART",
+    "description": "SPEED SKETCHING / PAINTING",
+    "rules": [
+      "Participation: Individual",
+      "Time Limit: 15–30 minutes",
+      "Theme will be given on the spot",
+      "Participants must complete the sketch within the given time",
+      "Participants must bring their own materials",
+      "Only original work is allowed (no copying or tracing)",
+      "Qualifications will be held online, and finals will be conducted offline"
+    ],
+    "image_url": "/events/1776510391827-speed scketchimg 2.webp",
+    "entry_fee": 100,
+    "max_team_size": 1,
+    "payment_account_name": "",
+    "payment_account_number": "",
+    "payment_ifsc": "",
+    "payment_upi_id": "",
+    "drive_folder_id": null,
+    "drive_embed_hint": null,
+    "is_active": true,
+    "created_at": "2026-04-18T11:06:39.719Z",
+    "updated_at": "2026-04-18T11:06:39.719Z",
+    "sub_categories": [],
+    "requires_team_details": false,
+    "requires_video_submission": true,
+    "verified_success_message": "",
+    "participants_count": 0
+  },
+  {
+    "id": "1a8a5c9a-eb81-4ae4-af90-227b7b3d29dc",
+    "title": "MIME",
+    "slug": "mime",
+    "category": "ART",
+    "description": "MIME",
+    "rules": [
+      "Participation: Team (4–6 members)",
+      "Time Limit: 3–5 minutes",
+      "No dialogues or verbal sounds allowed",
+      "Background music must be submitted 48 hours prior",
+      "Minimal props allowed",
+      "Vulgar or inappropriate acts are strictly prohibited",
+      "Originality is mandatory",
+      "Qualifications will be held online, and finals will be conducted offline ."
+    ],
+    "image_url": "/events/1776510567738-mime 2.webp",
+    "entry_fee": 100,
+    "max_team_size": 6,
+    "payment_account_name": "",
+    "payment_account_number": "",
+    "payment_ifsc": "",
+    "payment_upi_id": "",
+    "drive_folder_id": null,
+    "drive_embed_hint": null,
+    "is_active": true,
+    "created_at": "2026-04-18T11:10:07.992Z",
+    "updated_at": "2026-04-18T11:10:07.992Z",
+    "sub_categories": [],
+    "requires_team_details": false,
+    "requires_video_submission": true,
+    "verified_success_message": "",
+    "participants_count": 0
+  },
+  {
+    "id": "4a8f74d7-5824-43ec-b240-e36e38a79473",
+    "title": "COSPLAY",
+    "slug": "cosplay",
+    "category": "Fashion",
+    "description": "COSPLAY",
+    "rules": [
+      "Participation: Individual / Team (max 3 members",
+      "Participants must portray a specific character",
+      "Costumes and presentation should reflect the chosen character accurately",
+      "Performance or brief act (if any) should align with the character",
+      "Time limit:3-4 minutes",
+      "Use of vulgar, offensive, or inappropriate content is strictly prohibited",
+      "Props are allowed but must be safe and manageable",
+      "The event will be conducted offline."
+    ],
+    "image_url": "/events/1776510668871-cosplay 2.webp",
+    "entry_fee": 100,
+    "max_team_size": 3,
+    "payment_account_name": "",
+    "payment_account_number": "",
+    "payment_ifsc": "",
+    "payment_upi_id": "",
+    "drive_folder_id": null,
+    "drive_embed_hint": null,
+    "is_active": true,
+    "created_at": "2026-04-18T11:12:00.269Z",
+    "updated_at": "2026-04-18T11:12:00.269Z",
+    "sub_categories": [],
+    "requires_team_details": false,
+    "requires_video_submission": false,
+    "verified_success_message": "✅ Payment Confirmation\n\nYour payment has been successfully verified.\n\n📍 Event Location: IFIM College\n🕙 Time: 10:00 AM\n📅 Date: 25 May 2026",
+    "participants_count": 0
+  },
+  {
+    "id": "aea86f49-f3cd-4cad-b42f-70a469cb67e6",
+    "title": "FASHION DESIGNING",
+    "slug": "fashion-designing",
+    "category": "ART",
+    "description": "FASHION DESIGNING",
+    "rules": [
+      "Participation: Team (max 3 members)",
+      "Theme-based design must be followed",
+      "Participants must create an original design as per the given theme",
+      "Presentation of the design is mandatory",
+      "Participants must bring their own materials (if required)",
+      "The event will be conducted offline."
+    ],
+    "image_url": "/events/1776510846636-fashion designing.webp",
+    "entry_fee": 100,
+    "max_team_size": 3,
+    "payment_account_name": "",
+    "payment_account_number": "",
+    "payment_ifsc": "",
+    "payment_upi_id": "",
+    "drive_folder_id": null,
+    "drive_embed_hint": null,
+    "is_active": true,
+    "created_at": "2026-04-18T11:15:06.534Z",
+    "updated_at": "2026-04-18T11:15:06.534Z",
+    "sub_categories": [],
+    "requires_team_details": false,
+    "requires_video_submission": false,
+    "verified_success_message": "✅ Payment Confirmation\n\nYour payment has been successfully verified.\n\n📍 Event Location: IFIM College\n🕙 Time: 10:00 AM\n📅 Date: 25 May 2026",
+    "participants_count": 0
+  },
+  {
+    "id": "aa2aa3c5-3ca7-462e-b48e-cc7bf65211dd",
+    "title": "SPELL BEE",
+    "slug": "spell-bee",
+    "category": "SPELL BEE",
+    "description": "SPELL BEE",
+    "rules": [
+      "Participation: Individual",
+      "The event will be conducted in multiple elimination rounds",
+      "Participants must spell the given word correctly to proceed to the next round",
+      "No external help, electronic devices, or communication with others is allowed",
+      "Incorrect spelling will result in elimination",
+      "Participants must be attentive and respond within the given time",
+      "Judges’ decision will be final and binding",
+      "The event will be conducted offline."
+    ],
+    "image_url": "/events/1776510958271-spell bee 2.webp",
+    "entry_fee": 100,
+    "max_team_size": 1,
+    "payment_account_name": "",
+    "payment_account_number": "",
+    "payment_ifsc": "",
+    "payment_upi_id": "",
+    "drive_folder_id": null,
+    "drive_embed_hint": null,
+    "is_active": true,
+    "created_at": "2026-04-18T11:17:23.296Z",
+    "updated_at": "2026-04-18T11:17:23.296Z",
+    "sub_categories": [],
+    "requires_team_details": false,
+    "requires_video_submission": false,
+    "verified_success_message": "✅ Payment Confirmation\n\nYour payment has been successfully verified.\n\n📍 Event Location: IFIM College\n🕙 Time: 10:00 AM\n📅 Date: 25 May 2026",
+    "participants_count": 0
+  },
+  {
+    "id": "a810c172-fea1-4701-9b75-6ad1dfd4f33d",
+    "title": "ROAST & TOAST",
+    "slug": "roast-toast",
+    "category": "DRAMA",
+    "description": "ROAST & TOAST",
+    "rules": [
+      "Participation: Individual",
+      "Time Limit: 3–4 minutes",
+      "Participants may perform roast, toast, or a combination of both Content should be humorous, creative, and engaging",
+      "Use of vulgar, offensive, or personal attacks is strictly prohibited",
+      "No political, abusive, or inappropriate content allowed",
+      "Participants must adhere to the time limit",
+      "The event will be conducted offline"
+    ],
+    "image_url": "/events/1776511122926-roast and toast.webp",
+    "entry_fee": 100,
+    "max_team_size": 1,
+    "payment_account_name": "",
+    "payment_account_number": "",
+    "payment_ifsc": "",
+    "payment_upi_id": "",
+    "drive_folder_id": null,
+    "drive_embed_hint": null,
+    "is_active": true,
+    "created_at": "2026-04-18T11:19:37.857Z",
+    "updated_at": "2026-04-18T11:19:37.857Z",
+    "sub_categories": [],
+    "requires_team_details": false,
+    "requires_video_submission": false,
+    "verified_success_message": "✅ Payment Confirmation\n\nYour payment has been successfully verified.\n\n📍 Event Location: IFIM College\n🕙 Time: 10:00 AM\n📅 Date: 25 May 2026",
+    "participants_count": 0
+  },
+  {
+    "id": "18bf6236-710f-4101-bf4d-fe3e3e2eaa2d",
+    "title": "ONE-ACT PLAY",
+    "slug": "one-act-play",
+    "category": "DRAMA",
+    "description": "ONE-ACT PLAY",
+    "rules": [
+      "Participation: Team (4–8 members)",
+      "Time Limit: 8–10 minutes (including setup and performance)",
+      "The skit must present a creative idea, social message, or imaginative concept",
+      "Innovative storytelling techniques (symbolism, flashbacks, role",
+      "reversal, minimal dialogue) are encouraged",
+      "Language: Kannada / Hindi / English",
+      "Clarity of message and audience understanding is essential",
+      "Qualifications will be held online, and finals will be conducted offline ."
+    ],
+    "image_url": "/events/1776511229024-oneact play.webp",
+    "entry_fee": 100,
+    "max_team_size": 8,
+    "payment_account_name": "",
+    "payment_account_number": "",
+    "payment_ifsc": "",
+    "payment_upi_id": "",
+    "drive_folder_id": null,
+    "drive_embed_hint": null,
+    "is_active": true,
+    "created_at": "2026-04-18T11:21:39.706Z",
+    "updated_at": "2026-04-18T11:21:39.706Z",
+    "sub_categories": [],
+    "requires_team_details": false,
+    "requires_video_submission": true,
+    "verified_success_message": "",
+    "participants_count": 0
+  },
+  {
+    "id": "04578288-8299-4ae1-8005-59af7a7ef6c3",
+    "title": "RECITATION",
+    "slug": "recitation",
+    "category": "DRAMA",
+    "description": "RECITATION",
+    "rules": [
+      "Participation: Individual",
+      "Time Limit: 2–4 minutes",
+      "Participants must recite a poem or passage of their choice",
+      "Content should be original or properly credited",
+      "Clear pronunciation, expression, and delivery will be judged",
+      "Use of vulgar, offensive, or inappropriate content is strictly prohibited",
+      "Participants must adhere to the time limit",
+      "The event will be conducted offline."
+    ],
+    "image_url": "/events/1776511358304-reciatation 2.webp",
+    "entry_fee": 100,
+    "max_team_size": 1,
+    "payment_account_name": "",
+    "payment_account_number": "",
+    "payment_ifsc": "",
+    "payment_upi_id": "",
+    "drive_folder_id": null,
+    "drive_embed_hint": null,
+    "is_active": true,
+    "created_at": "2026-04-18T11:24:03.143Z",
+    "updated_at": "2026-04-18T11:24:03.143Z",
+    "sub_categories": [],
+    "requires_team_details": false,
+    "requires_video_submission": false,
+    "verified_success_message": "✅ Payment Confirmation\n\nYour payment has been successfully verified.\n\n📍 Event Location: IFIM College\n🕙 Time: 10:00 AM\n📅 Date: 25 May 2026",
+    "participants_count": 0
+  },
+  {
+    "id": "64b3996c-6186-40df-a5fd-29d8d9c3a40f",
+    "title": "FREE-FIRE",
+    "slug": "free-fire",
+    "category": "GAMING",
+    "description": "FREE-FIRE",
+    "rules": [
+      "Team of 4; valid IDs (1 team/player)",
+      "Join on time; no show = team disqualified",
+      "Mode: Battle Royale",
+      "3–5 matches; results by total points",
+      "Scoring: Placement + kills (1 kill = 1 point)",
+      "No cheating, hacks, emulator/PC, teaming, exploits, or stream sniping",
+      "Violation = disqualification + ban",
+      "Use own device & stable internet (no restart for personal issues)",
+      "Tie-breaker: kills → last match → head-to-head",
+      "Admin decision final; no disputes",
+      "Top 2 teams rewarded",
+      "Screenshots may be required",
+      "POV must be recorded by at least one player in the team.",
+      "Qualifications will be held online, and finals will be conducted offline ."
+    ],
+    "image_url": "/events/1776511918075-freefire.webp",
+    "entry_fee": 100,
+    "max_team_size": 5,
+    "payment_account_name": "",
+    "payment_account_number": "",
+    "payment_ifsc": "",
+    "payment_upi_id": "",
+    "drive_folder_id": null,
+    "drive_embed_hint": null,
+    "is_active": true,
+    "created_at": "2026-04-18T11:32:55.695Z",
+    "updated_at": "2026-04-18T11:32:55.695Z",
+    "sub_categories": [],
+    "requires_team_details": true,
+    "requires_video_submission": false,
+    "verified_success_message": "✅ Payment Confirmation\n\nYour payment has been successfully verified.\n\n📍 Event Location: IFIM College\n🕙 Time: 10:00 AM\n📅 Date: 25 May 2026",
+    "participants_count": 0
+  },
+  {
+    "id": "e26503b5-6832-46fa-a1b2-7c830765afde",
+    "title": "BGMI",
+    "slug": "bgmi",
+    "category": "GAMING",
+    "description": "BGMI",
+    "rules": [
+      "Team of 4; valid in-game IDs required (1 team/player)",
+      "Report 15 mins early; late = disqualified",
+      "Matches in custom rooms (ID & password shared before start)",
+      "Match starts on time (no wait for missing players)",
+      "Mode: Classic | Maps: Erangel / Miramar / Sanhok (rotation)",
+      "3–5 matches/round; ranking based on total points",
+      "Scoring: Placement + kills (1 kill = 1 point)",
+      "No hacking, cheating, emulator/PC, teaming, exploits, or stream sniping",
+      "Violations = disqualification + ban",
+      "Maintain discipline; follow admins; no toxic behavior",
+      "Misconduct may lead to warning, point deduction, or disqualification",
+      "Qualifications will be held online, and finals will be conducted offline ."
+    ],
+    "image_url": "/events/1776512095337-Bgmi.webp",
+    "entry_fee": 100,
+    "max_team_size": 5,
+    "payment_account_name": "",
+    "payment_account_number": "",
+    "payment_ifsc": "",
+    "payment_upi_id": "",
+    "drive_folder_id": null,
+    "drive_embed_hint": null,
+    "is_active": true,
+    "created_at": "2026-04-18T11:36:08.543Z",
+    "updated_at": "2026-04-18T11:36:08.543Z",
+    "sub_categories": [],
+    "requires_team_details": true,
+    "requires_video_submission": false,
+    "verified_success_message": "",
+    "participants_count": 0
+  }
+];
 
-const cache: Record<string, CacheEntry<any>> = {};
+const HARDCODED_COMMITTEE: CommitteeMember[] = [];
 
-function getCached<T>(key: string): T | null {
-  const entry = cache[key];
-  if (!entry) return null;
-  if (Date.now() - entry.fetchedAt > CACHE_TTL_MS) return null; // stale
-  return entry.data;
-}
+const HARDCODED_RULES: GeneralRule[] = [];
 
-function setCache<T>(key: string, data: T) {
-  cache[key] = { data, fetchedAt: Date.now() };
-}
+// ─── HOOKS ──────────────────────────────────────────────────────────
 
-// ─── Events ──────────────────────────────────────────────────────────
 export function useEvents() {
-  const cached = getCached<DatabaseEvent[]>('events');
-  const [events, setEvents] = useState<DatabaseEvent[]>(cached || []);
-  const [loading, setLoading] = useState(!cached);
-
-  useEffect(() => {
-    if (getCached<DatabaseEvent[]>('events')) {
-      setEvents(getCached<DatabaseEvent[]>('events')!);
-      setLoading(false);
-      return;
-    }
-
-    async function fetchEvents() {
-      try {
-        const data = await api.get<any[]>('/api/public?resource=events');
-        
-        const formattedEvents = (data || []).map((row: any) => ({
-          ...row,
-          entry_fee: Number(row.entry_fee || 0),
-          participants_count: Number(row.participants_count || 0),
-        }));
-        
-        setCache('events', formattedEvents);
-        setEvents(formattedEvents);
-      } catch (error) {
-        console.error('Error fetching events:', error);
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchEvents();
-  }, []);
-
-  return { events, loading };
+  return { events: HARDCODED_EVENTS, loading: false };
 }
 
-// ─── Committee ───────────────────────────────────────────────────────
 export function useCommittee() {
-  const cached = getCached<CommitteeMember[]>('committee');
-  const [committee, setCommittee] = useState<CommitteeMember[]>(cached || []);
-  const [loading, setLoading] = useState(!cached);
-
-  useEffect(() => {
-    if (getCached<CommitteeMember[]>('committee')) {
-      setCommittee(getCached<CommitteeMember[]>('committee')!);
-      setLoading(false);
-      return;
-    }
-
-    async function fetchCommittee() {
-      try {
-        const data = await api.get<CommitteeMember[]>('/api/public?resource=committee');
-        setCache('committee', data || []);
-        setCommittee(data || []);
-      } catch (error) {
-        console.error('Error fetching committee:', error);
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchCommittee();
-  }, []);
-
-  return { committee, loading };
+  return { committee: HARDCODED_COMMITTEE, loading: false };
 }
 
-// ─── General Rules ───────────────────────────────────────────────────
 export function useGeneralRules() {
-  const cached = getCached<GeneralRule[]>('general_rules');
-  const [rules, setRules] = useState<GeneralRule[]>(cached || []);
-  const [loading, setLoading] = useState(!cached);
-
-  useEffect(() => {
-    if (getCached<GeneralRule[]>('general_rules')) {
-      setRules(getCached<GeneralRule[]>('general_rules')!);
-      setLoading(false);
-      return;
-    }
-
-    async function fetchRules() {
-      try {
-        const data = await api.get<GeneralRule[]>('/api/public?resource=general_rules');
-        setCache('general_rules', data || []);
-        setRules(data || []);
-      } catch (error) {
-        console.error('Error fetching general rules:', error);
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchRules();
-  }, []);
-
-  return { rules, loading };
+  return { rules: HARDCODED_RULES, loading: false };
 }
-

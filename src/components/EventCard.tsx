@@ -13,10 +13,6 @@ interface EventCardProps {
 export default memo(function EventCard({ event, index }: EventCardProps) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 50 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6, delay: index * 0.1 }}
-      viewport={{ once: true }}
       whileHover={{ y: -10 }}
       className="group relative bg-fest-card rounded-3xl overflow-hidden border border-white/10 hover:border-fest-primary/50 transition-all duration-500 flex flex-col"
     >
@@ -29,8 +25,6 @@ export default memo(function EventCard({ event, index }: EventCardProps) {
             alt={event.title}
             className="w-full h-full object-cover object-center transition-all duration-500"
             referrerPolicy="no-referrer"
-            loading="lazy"
-            decoding="async"
           />
         ) : (
           <div className="w-full h-full bg-gradient-to-br from-fest-primary/20 via-fest-accent/10 to-fest-primary-dark/20 flex items-center justify-center">
