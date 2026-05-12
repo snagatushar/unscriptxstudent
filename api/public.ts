@@ -61,7 +61,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const result = await query(`
         SELECT participant_name, team_name, qualification_stage
         FROM registrations 
-        WHERE event_id = $1 AND (COALESCE(payment_status, status) = 'approved' OR qualification_stage != 'not_started')
+        WHERE event_id = $1 AND (payment_status = 'approved' OR qualification_stage != 'not_started')
         ORDER BY qualification_stage DESC, created_at ASC
       `, [target_event_id]);
       

@@ -76,30 +76,32 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const {
         event_id, participant_name, email, phone, college_name,
         department, year_of_study, team_name, team_size, sub_category,
-        team_members, payment_screenshot_url, id_card_url
+        team_members, application_form_no, referral_code, user_photo_url
       } = req.body;
 
-      // SECURITY FIX (C1): Always use the authenticated user's ID from JWT, never trust client-supplied user_id
       const user_id = userId;
 
-      if (!event_id || !payment_screenshot_url || !id_card_url) {
+      if (!event_id || !application_form_no || !user_photo_url) {
         return res.status(400).json({ error: 'Missing required registration parameters' });
       }
+
+      // Auto-approve if specific referral code is provided
+      const initialStatus = referral_code === 'ifim_unscripTx_2026' ? 'approved' : 'pending';
 
       const result = await query(
         `INSERT INTO registrations (
           user_id, event_id, participant_name, email, phone, college_name,
           department, year_of_study, team_name, team_size, sub_category,
-          team_members, payment_screenshot_url, id_card_url, payment_status
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, 'pending') RETURNING *`,
+          team_members, application_form_no, referral_code, user_photo_url, payment_status
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16) RETURNING *`,
         [
           user_id, event_id, participant_name, email, phone, college_name,
           department, year_of_study, team_name, team_size, sub_category,
-          JSON.stringify(team_members || []), payment_screenshot_url, id_card_url
+          JSON.stringify(team_members || []), application_form_no, referral_code, user_photo_url, initialStatus
         ]
       );
 
-      // Sync user profile data if not exists (safer COALESCE logic)
+      // Sync user profile data
       await query(
         `UPDATE users 
          SET phone = CASE WHEN phone IS NULL OR phone = '' THEN $1 ELSE phone END, 
@@ -109,7 +111,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         [phone, college_name, participant_name, user_id]
       );
 
-      return res.status(200).json({ success: true, data: result.rows[0] });
+      return res.status(200).json({ success: true, data: result.rows[0], autoApproved: !!referral_code });
     }
 
     // --- Action: Submission (POST) ---

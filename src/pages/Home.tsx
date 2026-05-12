@@ -34,8 +34,8 @@ const ABOUT_COLLEGE = {
  * Hardcoded universal guidelines — isolated from API.
  */
 const GENERAL_RULES = [
-  'All participants must carry a valid college ID card at all times during the event.',
-  'Registration is mandatory for all events. Spot registrations are subject to availability.',
+  'All participants must upload a clear user photo and carry a valid college ID card during the event.',
+  'Registration is mandatory for all events via the application form number.',
   'Any form of malpractice, plagiarism, or misconduct will result in immediate disqualification.',
   'The decision of the judges and organizing committee will be final and binding.',
   'Participants must report to the event venue at least 15 minutes before the scheduled time.',

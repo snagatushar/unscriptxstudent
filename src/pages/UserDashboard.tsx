@@ -113,7 +113,7 @@ export default function UserDashboard() {
             Registered <span className="text-fest-primary">Events</span>
           </h1>
           <p className="text-white/60 mb-8 md:mb-12 text-sm md:text-lg">
-            Track payment approval and round results for each event you registered in.
+            Track approval status and round results for each event you registered in.
           </p>
         </motion.div>
 
@@ -160,7 +160,7 @@ export default function UserDashboard() {
                       <Clock className="text-fest-accent" size={20} />
                     )}
                     <div>
-                      <div className="text-[10px] uppercase text-white/40 tracking-widest">Payment Approval</div>
+                      <div className="text-[10px] uppercase text-white/40 tracking-widest">Approval Status</div>
                       <div className="text-sm font-bold capitalize">{registration.payment_status}</div>
                     </div>
                   </div>
@@ -188,7 +188,7 @@ export default function UserDashboard() {
 
                 {registration.payment_review_notes && (
                   <div className="rounded-2xl border border-yellow-500/20 bg-yellow-500/5 p-4 text-xs text-yellow-100/80">
-                    Payment note: {registration.payment_review_notes}
+                    Review note: {registration.payment_review_notes}
                   </div>
                 )}
 
@@ -202,7 +202,7 @@ export default function UserDashboard() {
                   <div className="space-y-4">
                     {registration.requires_video_submission === false ? (
                       <div className="text-center p-5 border border-green-500/30 rounded-2xl bg-green-500/10 text-sm text-green-100/90 leading-relaxed font-medium">
-                        {registration.verified_success_message || "Your payment is verified! Details regarding timings and location are secured."}
+                        {registration.verified_success_message || "Your registration is approved! Details regarding timings and location are secured."}
                       </div>
                     ) : (
                       (() => {
@@ -243,13 +243,13 @@ export default function UserDashboard() {
 
                 {registration.payment_status === 'rejected' && (
                   <div className="text-center text-[10px] uppercase tracking-widest text-red-300/80 p-4 border border-red-500/20 rounded-2xl bg-red-500/5">
-                    Payment rejected. Please contact the team.
+                    Registration rejected. Please contact the team.
                   </div>
                 )}
 
                 {registration.payment_status === 'pending' && (
                   <div className="text-center text-[10px] uppercase tracking-widest text-white/40 p-4 border border-white/5 rounded-2xl">
-                    Registration submitted. Wait for payment verification.
+                    Registration submitted. Wait for approval.
                   </div>
                 )}
               </motion.div>

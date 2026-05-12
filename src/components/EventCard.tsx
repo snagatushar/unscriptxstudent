@@ -41,12 +41,7 @@ export default memo(function EventCard({ event, index }: EventCardProps) {
         <h3 className="text-2xl font-display font-bold mb-3 group-hover:text-fest-accent transition-colors">{event.title}</h3>
         <p className="text-white/60 text-sm mb-6 line-clamp-2 flex-1">{event.description}</p>
 
-        <div className="flex flex-col gap-3 mb-8">
-          <div className="flex items-center gap-2 text-xs text-white/40">
-            <Trophy size={14} className="text-fest-accent" />
-            <span>Entry Fee: <strong className="text-white">₹{event.entry_fee}</strong></span>
-          </div>
-        </div>
+
 
         <Link
           to={`/events/${event.id}`}

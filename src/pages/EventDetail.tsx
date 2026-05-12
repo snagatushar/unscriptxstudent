@@ -98,23 +98,11 @@ export default function EventDetail() {
             </div>
 
             <div className="grid grid-cols-1 gap-3 md:gap-4">
-              {[
-                { icon: IndianRupee, label: 'Entry Fee (Per Person)', value: `₹${event.entry_fee}`, color: 'text-fest-primary' },
-              ].map((item, index) => (
-                <div key={index} className="glass p-4 md:p-6 rounded-2xl text-center">
-                  <item.icon size={20} className={`${item.color} mx-auto mb-2 md:mb-3`} />
-                  <div className="text-[9px] md:text-[10px] uppercase tracking-widest text-white/40 mb-1">{item.label}</div>
-                  <div className="text-xs md:text-sm font-bold">{item.value}</div>
-                </div>
-              ))}
-            </div>
-
-            <div className="glass p-6 md:p-8 rounded-2xl md:rounded-3xl text-sm md:text-base leading-relaxed text-white/70 border border-white/5 ">
-              <strong className="text-fest-primary uppercase tracking-widest text-2xl md:text-3xl block mb-3">Caution:</strong>
-              Register for the event, upload your payment proof, wait for payment approval, and then upload your round
-              content only for this event when the upload window is opened.
+              {/* Removed Entry Fee */}
             </div>
           </motion.div>
+
+
 
           <motion.div
             initial={{ opacity: 0, x: 50 }}
@@ -128,17 +116,7 @@ export default function EventDetail() {
               <p className="text-white/60 text-base md:text-lg leading-relaxed whitespace-pre-line">{event.description}</p>
             </div>
 
-            {(event.payment_account_name || event.payment_account_number || event.payment_upi_id) && (
-              <div className="glass p-6 rounded-3xl border border-white/10">
-                <h3 className="text-2xl md:text-3xl font-bold text-fest-primary uppercase tracking-wider mb-4">Payment Details</h3>
-                <div className="space-y-3 text-base md:text-lg text-white/70">
-                  {event.payment_account_name && <p>Account Name: {event.payment_account_name}</p>}
-                  {event.payment_account_number && <p>Account Number: {event.payment_account_number}</p>}
-                  {event.payment_ifsc && <p>IFSC: {event.payment_ifsc}</p>}
-                  {event.payment_upi_id && <p>UPI ID: {event.payment_upi_id}</p>}
-                </div>
-              </div>
-            )}
+
 
             {event.rules && event.rules.length > 0 && (
               <div className="space-y-4 md:space-y-6">

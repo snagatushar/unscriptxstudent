@@ -7,6 +7,7 @@ import { uploadToS3 } from '../lib/storage';
 import { api } from '../lib/api';
 import { useAuth } from '../contexts/AuthContext';
 import { DatabaseEvent } from '../types';
+import { HARDCODED_EVENTS } from '../hooks/useAwsData';
 import toast from 'react-hot-toast';
 
 export default function Register() {
@@ -23,40 +24,26 @@ export default function Register() {
   const [teamSize, setTeamSize] = useState(1);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
-  const [fullName, setFullName] = useState('');
-  const [paymentFile, setPaymentFile] = useState<File | null>(null);
-  const [idCardFile, setIdCardFile] = useState<File | null>(null);
+  const [applicationFormNo, setApplicationFormNo] = useState('');
+  const [referralCode, setReferralCode] = useState('');
+  const [userPhotoFile, setUserPhotoFile] = useState<File | null>(null);
   const [subCategory, setSubCategory] = useState('');
   const [registeredSubCategories, setRegisteredSubCategories] = useState<string[]>([]);
   const [teamMembers, setTeamMembers] = useState<{ name: string; game_id: string }[]>(
     Array(5).fill(null).map(() => ({ name: '', game_id: '' }))
   );
 
-  // Fetch event details and user's existing registrations for this event
   useEffect(() => {
-    async function init() {
-      if (!eventId) return;
-
-      try {
-        const data = await api.get<{ event: DatabaseEvent; registeredCategories?: string[] }>(
-          `/api/participant-hub?action=event-data&eventId=${eventId}${user ? `&userId=${user.id}` : ''}`
-        );
-
-        setEvent(data.event);
-        setTeamSize(1);
-
-        if (data.registeredCategories) {
-          setRegisteredSubCategories(data.registeredCategories);
-        }
-      } catch {
-        toast.error('Could not load event details.');
-      } finally {
-        setLoadingConfig(false);
-      }
+    if (!eventId) return;
+    const foundEvent = HARDCODED_EVENTS.find(e => e.id === eventId);
+    if (foundEvent) {
+      setEvent(foundEvent);
+      setTeamSize(1);
+    } else {
+      toast.error('Event not found');
     }
-
-    init();
-  }, [eventId, user]);
+    setLoadingConfig(false);
+  }, [eventId]);
 
   useEffect(() => {
     setPhone(profile?.phone || '');
@@ -64,66 +51,41 @@ export default function Register() {
   }, [profile]);
 
   const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
     if (!user) return toast.error('You must be logged in to register');
     if (!event) return toast.error('Event not found');
-    if (!paymentFile) return toast.error('Please upload your payment screenshot');
-    if (!idCardFile) return toast.error('Please upload your Student ID Card');
+    if (!applicationFormNo) return toast.error('Please enter your Application Form Number');
+    if (!userPhotoFile) return toast.error('Please upload your photo');
+    
     if (event.sub_categories && event.sub_categories.length > 0 && !subCategory) {
       return toast.error('Please select an event category/slot');
     }
 
-    // Size limit: 100KB
-    const MAX_FILE_SIZE = 100 * 1024;
+    const MAX_FILE_SIZE = 500 * 1024; // Increased to 500KB for better photo quality
     const allowedImageTypes = ['image/jpeg', 'image/png', 'image/webp'];
 
-    if (paymentFile.size > MAX_FILE_SIZE) {
-      return toast.error('Payment screenshot must be under 100KB. Please compress the image.');
+    if (userPhotoFile.size > MAX_FILE_SIZE) {
+      return toast.error('User photo must be under 500KB. Please compress the image if needed.');
     }
-    if (!allowedImageTypes.includes(paymentFile.type)) {
-      return toast.error('Only JPG, PNG, or WebP images are allowed for payment proof.');
-    }
-
-    if (idCardFile.size > MAX_FILE_SIZE) {
-      return toast.error('ID Card must be under 100KB. Please compress the image.');
-    }
-    if (!allowedImageTypes.includes(idCardFile.type)) {
-      return toast.error('Only JPG, PNG, or WebP images are allowed for ID Card.');
+    if (!allowedImageTypes.includes(userPhotoFile.type)) {
+      return toast.error('Only JPG, PNG, or WebP images are allowed.');
     }
 
-    // BUG-05 FIX: Phone number validation
     const phoneDigits = phone.replace(/\D/g, '');
     if (phoneDigits.length < 10 || phoneDigits.length > 13) {
-      return toast.error('Please enter a valid phone number (10-13 digits).');
-    }
-
-    // Roster Validation
-    if (event.requires_team_details) {
-      const first4Complete = teamMembers.slice(0, 4).every(m => m.name.trim() !== '' && m.game_id.trim() !== '');
-      if (!first4Complete) {
-        return toast.error('Please fill in the details for all 4 compulsory players.');
-      }
+      return toast.error('Please enter a valid phone number.');
     }
 
     setSubmitting(true);
     try {
-      // Generate descriptive file prefixes for S3 organization
       const safeEventTitle = (event?.title || 'event').replace(/[^a-zA-Z0-9]/g, '_').toLowerCase();
-      const safeUserName = fullName.replace(/[^a-zA-Z0-9]/g, '_').toLowerCase() || 'student';
+      const safeUserName = (profile?.full_name || 'student').replace(/[^a-zA-Z0-9]/g, '_').toLowerCase();
 
-      const paymentPrefix = `${safeEventTitle}_${safeUserName}_payment`;
-      const idPrefix = `${safeEventTitle}_${safeUserName}_id`;
-
-      // 1. Upload Payment Screenshot
-      const { key: paymentKey } = await uploadToS3(paymentFile, 'payments', paymentPrefix);
-
-      // 2. Upload ID Card
-      const { key: idCardKey } = await uploadToS3(idCardFile, 'id_cards', idPrefix);
+      const photoPrefix = `${safeEventTitle}_${safeUserName}_photo`;
+      const { key: photoKey } = await uploadToS3(userPhotoFile, 'user_photos', photoPrefix);
 
       const payload = {
-        user_id: user.id,
         event_id: event.id,
-        participant_name: fullName,
+        participant_name: profile?.full_name || '',
         email: user.email,
         phone: phoneDigits,
         college_name: collegeName || null,
@@ -133,23 +95,22 @@ export default function Register() {
         team_size: teamSize,
         sub_category: subCategory || null,
         team_members: event.requires_team_details ? teamMembers : [],
-        payment_screenshot_url: paymentKey,
-        id_card_url: idCardKey,
+        application_form_no: applicationFormNo,
+        referral_code: referralCode,
+        user_photo_url: photoKey,
       };
 
-      await api.post('/api/participant-hub?action=register', payload);
+      const res = await api.post<any>('/api/participant-hub?action=register', payload);
 
-      toast.success('Registration successful. Wait up to 24 hours for payment approval.');
-      // Track the newly registered subcategory
-      if (subCategory) {
-        setRegisteredSubCategories(prev => [...prev, subCategory]);
+      if (res.autoApproved) {
+        toast.success('Registration successful and auto-approved!');
+      } else {
+        toast.success('Registration submitted successfully.');
       }
+      
       setSubmitted(true);
     } catch (err: any) {
-      // BUG-09 FIX: Don't leak raw Supabase error details
-      const msg = err.message || 'Failed to submit registration';
-      toast.error(msg);
-      if (err.code) console.error('Registration error:', err);
+      toast.error(err.message || 'Failed to submit registration');
     } finally {
       setSubmitting(false);
     }
@@ -187,7 +148,6 @@ export default function Register() {
           <p className="text-white/50 mb-10">
             You've successfully registered for <strong className="text-white">{event?.title}</strong>
             {subCategory && <span> in the <strong className="text-fest-primary">{subCategory}</strong> category</span>}.
-            Wait for 24 hours for payment approval.
           </p>
           <div className="space-y-4">
             <Link
@@ -201,8 +161,7 @@ export default function Register() {
                 onClick={() => {
                   setSubmitted(false);
                   setSubCategory('');
-                  setPaymentFile(null);
-                  setIdCardFile(null);
+                  setUserPhotoFile(null);
                   setTeamMembers(Array(5).fill(null).map(() => ({ name: '', game_id: '' })));
                 }}
                 className="w-full py-4 border-2 border-fest-primary/40 text-fest-primary rounded-2xl font-bold uppercase tracking-widest hover:bg-fest-primary/10 transition-all"
@@ -226,47 +185,16 @@ export default function Register() {
             SECURE YOUR <span className="text-fest-primary">SPOT</span>
           </h1>
           <p className="text-white/60 text-xl mb-12 leading-relaxed max-w-lg">
-            Registration for <strong className="text-fest-primary">{event?.title}</strong> is almost complete. Entry fee is
-            {' '}₹{event?.entry_fee} per participant. Total Amount: <strong className="text-fest-primary">₹{totalAmount}</strong>
+            Registration for <strong className="text-fest-primary">{event?.title}</strong> is almost complete. Please provide your application details and upload your photo below.
           </p>
 
           <div className="space-y-6 glass p-8 rounded-3xl border-l-4 border-fest-primary">
-            <h3 className="font-display font-bold text-xl mb-4">Payment Instructions</h3>
-            <ul className="space-y-4 text-white/80">
-              <li className="flex items-center justify-between gap-4">
-                <span>Bank Name: <strong className="text-fest-primary">Axis Bank</strong></span>
-                <button type="button" onClick={() => copyToClipboard('Axis Bank', 'Bank Name')} className="p-2 bg-white/5 hover:bg-white/10 rounded-lg text-white/60 hover:text-white transition-colors" title="Copy Bank Name">
-                  <Copy size={16} />
-                </button>
-              </li>
-              <li className="flex items-center justify-between gap-4">
-                <span>Account Name: <strong className="text-fest-primary">IFIM College</strong></span>
-                <button type="button" onClick={() => copyToClipboard('IFIM College', 'Account Name')} className="p-2 bg-white/5 hover:bg-white/10 rounded-lg text-white/60 hover:text-white transition-colors" title="Copy Account Name">
-                  <Copy size={16} />
-                </button>
-              </li>
-              <li className="flex items-center justify-between gap-4">
-                <span>Account Number: <strong className="text-fest-primary">919010080093905</strong></span>
-                <button type="button" onClick={() => copyToClipboard('919010080093905', 'Account Number')} className="p-2 bg-white/5 hover:bg-white/10 rounded-lg text-white/60 hover:text-white transition-colors" title="Copy Account Number">
-                  <Copy size={16} />
-                </button>
-              </li>
-              <li className="flex items-center justify-between gap-4">
-                <span>Branch: <strong className="text-fest-primary">Electronic City</strong></span>
-                <button type="button" onClick={() => copyToClipboard('Electronic City', 'Branch')} className="p-2 bg-white/5 hover:bg-white/10 rounded-lg text-white/60 hover:text-white transition-colors" title="Copy Branch">
-                  <Copy size={16} />
-                </button>
-              </li>
-              <li className="flex items-center justify-between gap-4">
-                <span>IFSC Code: <strong className="text-fest-primary">UTIB0000677</strong></span>
-                <button type="button" onClick={() => copyToClipboard('UTIB0000677', 'IFSC Code')} className="p-2 bg-white/5 hover:bg-white/10 rounded-lg text-white/60 hover:text-white transition-colors" title="Copy IFSC Code">
-                  <Copy size={16} />
-                </button>
-              </li>
-              <li>Exact Amount to pay: <strong className="text-xl text-fest-primary">₹{totalAmount}</strong></li>
-              <li>Upload a clear screenshot of the successful payment.</li>
-              <li>Upload a clear photo/scan of your <strong>Student ID Card</strong>.</li>
-              <li>Maximum file size for each: <strong className="text-fest-primary">100KB</strong>.</li>
+            <h3 className="font-display font-bold text-xl mb-4">Registration Instructions</h3>
+            <ul className="space-y-4 text-white/80 list-disc pl-5">
+              <li>Enter your correct <strong>Application Form Number</strong>.</li>
+              <li>Upload a clear **User Photo** of yourself.</li>
+              <li>Enter a **Referral Code** if you have one for instant approval.</li>
+              <li>Ensure all personal details match your application records.</li>
             </ul>
           </div>
         </motion.div>
@@ -282,18 +210,11 @@ export default function Register() {
             <div className="relative group">
               <input
                 type="text"
-                required
-                autoComplete="off"
-                name="user_custom_participant_name_random"
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-                className="w-full bg-transparent border-b-2 border-white/10 py-3 focus:outline-none focus:border-fest-primary transition-colors peer placeholder-transparent"
-                placeholder="Participant Full Name"
-                id="participant-full-name-v6"
+                disabled
+                value={profile?.full_name || ''}
+                className="w-full bg-transparent border-b-2 border-white/10 py-3 focus:outline-none transition-colors opacity-50 font-bold text-fest-primary cursor-not-allowed"
               />
-              <label htmlFor="participant-full-name-v6" className="absolute left-0 top-3 text-white/30 text-sm transition-all pointer-events-none peer-focus:-top-4 peer-focus:text-fest-primary peer-focus:text-xs peer-[:not(:placeholder-shown)]:-top-4 peer-[:not(:placeholder-shown)]:text-xs">
-                Participant Full Name
-              </label>
+              <label className="absolute left-0 -top-4 text-fest-primary text-xs">Full Name</label>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -352,6 +273,36 @@ export default function Register() {
                 />
                 <label htmlFor="year" className="absolute left-0 top-3 text-white/30 text-sm transition-all peer-focus:-top-4 peer-focus:text-fest-primary peer-focus:text-xs peer-[:not(:placeholder-shown)]:-top-4 peer-[:not(:placeholder-shown)]:text-xs">
                   Year Of Study
+                </label>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="relative group">
+                <input
+                  type="text"
+                  required
+                  value={applicationFormNo}
+                  onChange={(e) => setApplicationFormNo(e.target.value)}
+                  className="w-full bg-transparent border-b-2 border-white/10 py-3 focus:outline-none focus:border-fest-primary transition-colors peer placeholder-transparent"
+                  placeholder="Application Form No"
+                  id="application-no"
+                />
+                <label htmlFor="application-no" className="absolute left-0 top-3 text-white/30 text-sm transition-all peer-focus:-top-4 peer-focus:text-fest-primary peer-focus:text-xs peer-[:not(:placeholder-shown)]:-top-4 peer-[:not(:placeholder-shown)]:text-xs">
+                  Application Form No
+                </label>
+              </div>
+              <div className="relative group">
+                <input
+                  type="text"
+                  value={referralCode}
+                  onChange={(e) => setReferralCode(e.target.value)}
+                  className="w-full bg-transparent border-b-2 border-white/10 py-3 focus:outline-none focus:border-fest-primary transition-colors peer placeholder-transparent"
+                  placeholder="Referral Code (e.g. ifim_unscripTx_2026)"
+                  id="referral-code"
+                />
+                <label htmlFor="referral-code" className="absolute left-0 top-3 text-white/30 text-sm transition-all peer-focus:-top-4 peer-focus:text-fest-primary peer-focus:text-xs peer-[:not(:placeholder-shown)]:-top-4 peer-[:not(:placeholder-shown)]:text-xs">
+                  Referral Code (for instant approval)
                 </label>
               </div>
             </div>
@@ -481,63 +432,28 @@ export default function Register() {
 
             <div className="space-y-5 mt-4">
               <div
-                className="relative rounded-3xl border-2 border-dashed border-fest-accent/40 bg-fest-accent/5 p-6 flex flex-col md:flex-row items-center md:items-start gap-4 hover:bg-fest-accent/10 hover:border-fest-accent transition-all cursor-pointer group"
-                onClick={() => document.getElementById('payment-upload')?.click()}
-              >
-                <input
-                  type="file"
-                  id="payment-upload"
-                  className="hidden"
-                  accept="image/*"
-                  onChange={(e) => setPaymentFile(e.target.files?.[0] || null)}
-                />
-                <div className={`p-4 rounded-full flex-shrink-0 transition-transform group-hover:scale-110 ${paymentFile ? 'bg-green-500/20 text-green-500' : 'bg-fest-accent/20 text-fest-accent'}`}>
-                  <UploadCloud size={28} />
-                </div>
-                <div className="text-center md:text-left flex-1">
-                  <h4 className="text-sm font-bold uppercase tracking-widest text-white mb-1">1. Payment Proof</h4>
-                  <p className="text-xs text-white/50">{paymentFile ? paymentFile.name : 'Upload Screenshot / Max 100KB (.jpg, .png)'}</p>
-                </div>
-                {paymentFile && <CheckCircle2 className="text-green-500 hidden md:block" size={24} />}
-              </div>
-
-              <div
                 className="relative rounded-3xl border-2 border-dashed border-fest-primary/40 bg-fest-primary/5 p-6 flex flex-col md:flex-row items-center md:items-start gap-4 hover:bg-fest-primary/10 hover:border-fest-primary transition-all cursor-pointer group"
-                onClick={() => document.getElementById('id-upload')?.click()}
+                onClick={() => document.getElementById('photo-upload')?.click()}
               >
                 <input
                   type="file"
-                  id="id-upload"
+                  id="photo-upload"
                   className="hidden"
                   accept="image/*"
-                  onChange={(e) => setIdCardFile(e.target.files?.[0] || null)}
+                  onChange={(e) => setUserPhotoFile(e.target.files?.[0] || null)}
                 />
-                <div className={`p-4 rounded-full flex-shrink-0 transition-transform group-hover:scale-110 ${idCardFile ? 'bg-green-500/20 text-green-500' : 'bg-fest-primary/20 text-fest-primary'}`}>
+                <div className={`p-4 rounded-full flex-shrink-0 transition-transform group-hover:scale-110 ${userPhotoFile ? 'bg-green-500/20 text-green-500' : 'bg-fest-primary/20 text-fest-primary'}`}>
                   <UploadCloud size={28} />
                 </div>
                 <div className="text-center md:text-left flex-1">
-                  <h4 className="text-sm font-bold uppercase tracking-widest text-white mb-1">2. Student ID Card</h4>
-                  <p className="text-xs text-white/50">{idCardFile ? idCardFile.name : 'Upload ID Photo / Max 100KB (.jpg, .png)'}</p>
+                  <h4 className="text-sm font-bold uppercase tracking-widest text-white mb-1">User Photo</h4>
+                  <p className="text-xs text-white/50">{userPhotoFile ? userPhotoFile.name : 'Upload Your Photo / Max 500KB (.jpg, .png)'}</p>
                 </div>
-                {idCardFile && <CheckCircle2 className="text-green-500 hidden md:block" size={24} />}
+                {userPhotoFile && <CheckCircle2 className="text-green-500 hidden md:block" size={24} />}
               </div>
             </div>
 
-            {/* Total Payable Summary */}
-            <div className="bg-fest-primary/10 border border-fest-primary/20 rounded-2xl p-6 flex items-center justify-between">
-              <div className="space-y-1">
-                <div className="text-[10px] uppercase tracking-widest text-white/40 font-bold">Total Amount to Pay</div>
-                <div className="text-sm text-white/60">
-                  {event?.requires_team_details
-                    ? `₹${event?.entry_fee} × 4 compulsory participants (5th is free sub)`
-                    : `₹${event?.entry_fee} × ${teamSize} participant${teamSize > 1 ? 's' : ''}`
-                  }
-                </div>
-              </div>
-              <div className="text-3xl font-display font-black text-fest-primary">
-                ₹{totalAmount}
-              </div>
-            </div>
+
 
             <button
               type="submit"
