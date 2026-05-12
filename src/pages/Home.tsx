@@ -4,6 +4,7 @@ import EventCard from '../components/EventCard';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Sparkles, Music, Zap, Palette, Loader2 } from 'lucide-react';
 import { useEvents } from '../hooks/useAwsData';
+import { QRCodeCanvas } from 'qrcode.react';
 
 /**
  * Hardcoded "About The Event" section.
@@ -456,6 +457,42 @@ export default function Home() {
         <div className="absolute bottom-0 right-0 w-full h-[1px] bg-gradient-to-r from-transparent via-white/5 to-transparent" />
       </section>
       */}
+
+      {/* QR Code Section */}
+      <section className="py-20 px-6 relative overflow-hidden">
+        <div className="max-w-4xl mx-auto text-center glass rounded-[3rem] p-12 md:p-16 border border-white/10 relative">
+          <div className="absolute -top-24 -left-24 w-64 h-64 bg-fest-primary/10 blur-[100px] -z-10" />
+          <div className="absolute -bottom-24 -right-24 w-64 h-64 bg-fest-accent/10 blur-[100px] -z-10" />
+          
+          <h2 className="text-3xl md:text-5xl font-display font-extrabold tracking-tighter mb-8 uppercase">
+            SCAN TO <span className="text-fest-primary text-glow-primary">SHARE</span>
+          </h2>
+          <p className="text-white/50 mb-12 max-w-lg mx-auto">
+            Scan this QR code to quickly access the platform on your mobile device or share it with your friends.
+          </p>
+          
+          <div className="inline-block p-6 bg-white rounded-[2rem] shadow-2xl shadow-fest-primary/20 hover:scale-105 transition-transform duration-500">
+            <QRCodeCanvas 
+              value="https://unscriptxstudent.vercel.app/"
+              size={200}
+              level="H"
+              includeMargin={true}
+              imageSettings={{
+                src: "/favicon.ico",
+                x: undefined,
+                y: undefined,
+                height: 40,
+                width: 40,
+                excavate: true,
+              }}
+            />
+          </div>
+          
+          <div className="mt-8 text-[10px] font-black text-fest-primary uppercase tracking-[0.3em]">
+            https://unscriptxstudent.vercel.app
+          </div>
+        </div>
+      </section>
 
       {/* CTA Section */}
       <section className="py-20 md:py-32 px-6 text-center">
